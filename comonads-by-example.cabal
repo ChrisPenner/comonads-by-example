@@ -1,0 +1,41 @@
+cabal-version:       2.0
+name:                comonads-by-example
+version:             0.0.0
+synopsis:            Comonads by example conference talk
+description:         Comonads by example conference talk
+homepage:            https://github.com/ChrisPenner/comonads-by-example
+bug-reports:         https://github.com/ChrisPenner/comonads-by-example/issues
+license:             BSD3
+license-file:        LICENSE
+author:              Chris Penner
+maintainer:          christopher.penner@gmail.com
+copyright:           2019 Chris Penner
+category:            Education
+build-type:          Simple
+extra-doc-files:     README.md
+                   , CHANGELOG.md
+tested-with:         GHC == 8.4.4
+
+source-repository head
+  type:                git
+  location:            https://github.com/ChrisPenner/comonads-by-example.git
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     ComonadsByExample
+                       Prelude
+
+  build-depends:       base-noprelude ^>= 4.11.1.0
+                     , relude
+
+  ghc-options:         -Wall
+                       -Wincomplete-uni-patterns
+                       -Wincomplete-record-updates
+                       -Wcompat
+                       -Widentities
+                       -Wredundant-constraints
+                       -fhide-source-paths
+                       -Wmissing-export-lists
+                       -Wpartial-fields
+
+  default-language:    Haskell2010
