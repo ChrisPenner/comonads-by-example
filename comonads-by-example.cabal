@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b6d0800a829b202127762f80e9f88f54620dd1dbd657c86539fee16c0364aa5a
+-- hash: d588070fa4229d0b72bf66bebf5d0bbe7762519e33776fcf1a8536e038931a50
 
 name:           comonads-by-example
 version:        0.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Store.Newton
       Zipper.Data
   other-modules:
       Paths_comonads_by_example
