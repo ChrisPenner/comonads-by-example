@@ -1,0 +1,28 @@
+name: comonads-by-example
+version: '0.0.0'
+synopsis: Comonads by example conference talk
+description: Comonads by example conference talk
+category: Education
+author: Chris Penner
+maintainer: christopher.penner@gmail.com
+copyright: 2019 Chris Penner
+license: BSD3
+github: ChrisPenner/comonads-by-example.git
+tested-with: GHC==8.4.4
+ghc-options:
+- -Wall
+- -Wincomplete-uni-patterns
+- -Wincomplete-record-updates
+- -Wcompat
+- -Widentities
+- -Wredundant-constraints
+- -fhide-source-paths
+- -Wmissing-export-lists
+- -Wpartial-fields
+dependencies:
+- base >=4.11.1.0
+library:
+  source-dirs: src
+  exposed-modules:
+  - ComonadsByExample
+  - Prelude

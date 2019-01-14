@@ -25,8 +25,7 @@ library
   exposed-modules:     ComonadsByExample
                        Prelude
 
-  build-depends:       base-noprelude ^>= 4.11.1.0
-                     , relude
+  build-depends:       base >= 4.11.1.0
 
   ghc-options:         -Wall
                        -Wincomplete-uni-patterns
