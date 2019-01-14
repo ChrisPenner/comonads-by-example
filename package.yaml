@@ -21,8 +21,6 @@ ghc-options:
 - -Wpartial-fields
 dependencies:
 - base >=4.11.1.0
+- comonad
 library:
   source-dirs: src
-  exposed-modules:
-  - ComonadsByExample
-  - Prelude
