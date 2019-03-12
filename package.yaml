@@ -17,7 +17,6 @@ ghc-options:
 - -Widentities
 - -Wredundant-constraints
 - -fhide-source-paths
-- -Wmissing-export-lists
 - -Wpartial-fields
 dependencies:
 - base >=4.11.1.0

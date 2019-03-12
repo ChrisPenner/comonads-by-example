@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.0.
+-- This file has been generated from package.yaml by hpack version 0.31.1.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d588070fa4229d0b72bf66bebf5d0bbe7762519e33776fcf1a8536e038931a50
+-- hash: 59892e0498f26cfdd2a632d12291b5b8ba5aa8e0307bc4686a9caffa84d17518
 
 name:           comonads-by-example
 version:        0.0.0
@@ -33,7 +33,7 @@ library
       Paths_comonads_by_example
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wmissing-export-lists -Wpartial-fields
+  ghc-options: -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wcompat -Widentities -Wredundant-constraints -fhide-source-paths -Wpartial-fields
   build-depends:
       base >=4.11.1.0
     , comonad
