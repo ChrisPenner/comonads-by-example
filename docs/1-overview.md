@@ -41,10 +41,17 @@ Let's start by thinking of some data-types where values have a *context*
 
 ![inline](./images/list.png)
 
+---
 
-```
+# Zipper
 
-```
+![inline](./images/zipper.png)
+
+---
+
+# Duplicate
+
+![inline](./images/zipper-duplicate.png)
 
 ---
 
