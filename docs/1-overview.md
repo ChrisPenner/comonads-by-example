@@ -49,6 +49,41 @@ Let's start by thinking of some data-types where values have a *context*
 
 ---
 
+# Usage Examples
+
+---
+
+List
+
+
+---
+
+# Tree
+
+![inline](./images/tree-demo-1.png)
+
+---
+
+![original fit](./images/tree-demo-1.png)
+![original fit](./images/tree-demo-2.png)
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Duplicate
 
 ![inline](./images/zipper-duplicate.png)

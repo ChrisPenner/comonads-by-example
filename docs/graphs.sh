@@ -18,6 +18,8 @@ graph(){
     cat <(echo "$header") - <(echo "$footer") | dot -Tpng -Gdpi=300 > ./images/"$1".png
 }
 
+
+
 graph tree <<EOF
 a[label="" style="filled" fillcolor="$focused"]
 b[label="" style=filled fillcolor="$selected"]
@@ -25,6 +27,69 @@ c[label="" style=filled fillcolor="$selected"]
 a -> b
 a -> c
 EOF
+
+graph tree-demo-1 <<EOF
+a1[label="a" style="filled" fillcolor="$focused"]
+{ rank=same
+    b1[label="b" style=filled fillcolor="$selected"]
+    d1[label="d" style=filled fillcolor="$selected"]
+}
+{
+    rank=same
+    c1[label="c" style=filled fillcolor="$selected"]
+}
+a1-> b1
+a1-> d1
+b1 -> c1
+EOF
+
+graph tree-demo-2 <<EOF
+compound=true;
+subgraph cluster_a {
+    label="a'"
+    style=rounded;
+    a1[label="a" style="filled" fillcolor="$focused"]
+    { rank=same
+        b1[label="b" style=filled fillcolor="$selected"]
+        d1[label="d" style=filled fillcolor="$selected"]
+    }
+    {
+      rank=same
+        c1[label="c" style=filled fillcolor="$selected"]
+    }
+    a1-> b1
+    a1-> d1
+    b1 -> c1
+}
+
+subgraph cluster_b {
+    label="b'"
+    style=rounded;
+    b2[label="b" style="filled" fillcolor="$focused"]
+    c2[label="c" style="filled" fillcolor="$selected"]
+    b2 -> c2
+}
+
+subgraph cluster_d {
+    label="d'"
+    style=rounded;
+    d3[label="d" style=filled fillcolor="$focused"]
+}
+
+subgraph cluster_c {
+    label="c'"
+    style=rounded;
+    c4[label="c" style=filled fillcolor="$focused"]
+}
+
+
+{ rank=same; b2; d3 }
+
+c1 -> b2 [ ltail=cluster_a, lhead=cluster_b ];
+d1 -> d3 [ ltail=cluster_a, lhead=cluster_d ];
+c2 -> c4 [ ltail=cluster_b, lhead=cluster_c ];
+EOF
+
 
 graph list <<EOF
 rankdir=LR;
