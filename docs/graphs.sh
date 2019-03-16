@@ -19,6 +19,49 @@ graph(){
 }
 
 
+graph list-demo-1 <<EOF
+rank=same;
+a[label="a" style="filled" fillcolor="$focused"]
+b[label="b" style=filled fillcolor="$selected"]
+c[label="c" style=filled fillcolor="$selected"]
+a-> b
+b -> c
+EOF
+
+graph list-demo-2 <<EOF
+compound=true;
+rankdir=LR;
+subgraph cluster_a {
+    color="$focused"
+    label="a'"
+    style=rounded;
+    a1[label="a" style="filled" fillcolor="$focused"]
+    b1[label="b" style=filled fillcolor="$selected"]
+    c1[label="c" style=filled fillcolor="$selected"]
+    a1-> b1
+    b1-> c1
+}
+
+subgraph cluster_b {
+    color="$selected"
+    label="b'"
+    style=rounded;
+    b2[label="b" style="filled" fillcolor="$focused"]
+    c2[label="c" style="filled" fillcolor="$selected"]
+    b2 -> c2
+}
+
+subgraph cluster_c {
+    color="$selected"
+    label="c'"
+    style=rounded;
+    c3[label="c" style=filled fillcolor="$focused"]
+}
+
+c1 -> b2 [ ltail=cluster_a, lhead=cluster_b ];
+c2 -> c3 [ ltail=cluster_b, lhead=cluster_c ];
+EOF
+
 
 graph tree <<EOF
 a[label="" style="filled" fillcolor="$focused"]

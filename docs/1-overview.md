@@ -55,6 +55,14 @@ Let's start by thinking of some data-types where values have a *context*
 
 List
 
+![inline 100%](./images/list-demo-1.png)
+
+---
+
+List
+
+![inline 100%](./images/list-demo-1.png)
+![inline](./images/list-demo-2.png)
 
 ---
 
