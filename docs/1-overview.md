@@ -29,11 +29,6 @@ Monads typically manipulate *__EFFECTS__*
 
 Let's start by thinking of some data-types where values have a *context*
 
----
-
-# Trees
-
-![inline](./images/tree.png)
 
 ---
 
@@ -43,13 +38,79 @@ Let's start by thinking of some data-types where values have a *context*
 
 ---
 
+# Trees
+
+![inline](./images/tree.png)
+
+---
+
 # Zipper
 
 ![inline](./images/zipper.png)
 
 ---
 
-# Usage Examples
+# Tetris
+
+---
+
+![fit original](./images/tetris-blocks.png)
+
+---
+
+![fit original](./images/upnext.png)
+
+---
+
+```haskell
+import Data.List.NonEmpty
+
+data Tetromino = Ricky | Island | Hero | Teewee | Smashboy
+    deriving (Eq, Show)
+
+upNext :: [Tetromino]
+upNext = Ricky : Smashboy : Hero : Teewee : []
+```
+
+---
+
+```haskell
+distanceToHero :: [Tetromino] -> Maybe Int
+distanceToHero ts = findIndex (== Hero) ts
+
+pairDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
+pairDistances [] = []
+pairDistances xs@(x:rest) = (x, distanceToHero xs) : pairDistances rest
+```
+
+---
+
+```haskell
+duplicate :: [a] -> [[a]]
+duplicate [] = []
+duplicate xs@(_:rest) = xs : duplicate rest
+
+> duplicate [1, 2, 3]
+[ [1, 2, 3]
+, [2, 3]
+, [3]
+]
+```
+
+---
+
+```haskell
+duplicate :: [a] -> [[a]]
+
+balloon :: ([a] -> b) -> [a] -> [b]
+balloon f = fmap f . duplicate'
+
+pairDistances'' :: [Tetromino] -> [(Tetromino, Maybe Int)]
+pairDistances'' = balloon pair
+  where
+    pair :: [Tetromino] -> (Tetromino, Maybe Int)
+    pair xs = (head xs, distanceToHero xs)
+```
 
 ---
 

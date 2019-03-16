@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Installing graphviz on mac with image support: https://github.com/parrt/dtreeviz
+
 # orange="#ed553c"
 focused="#f3b134"
 neutral="#0b94a1"
@@ -197,3 +199,27 @@ subgraph cluster_2 {
 b1 -> b2 [style=invis]
 b2 -> b3 [style=invis]
 EOF
+
+graph upnext <<EOF
+    rankdir=LR
+    subgraph cluster_ricky {
+        label="2"
+        ricky[image="./images/blocks/orange-ricky.png" shape=none label=""];
+    }
+    subgraph cluster_smashboy {
+        label="1"
+        smashboy[image="./images/blocks/smashboy.png" shape=none label=""];
+    }
+    subgraph cluster_hero {
+        label="0"
+        hero[image="./images/blocks/hero.png" shape=none label="" lp="1000,1000?"];
+    }
+    subgraph cluster_teewee {
+        label="Nothing"
+        teewee[image="./images/blocks/teewee.png" shape=none label=""];
+    }
+    ricky -> smashboy
+    smashboy -> hero
+    hero -> teewee
+EOF
+
