@@ -13,16 +13,16 @@ upNext = Ricky : Smashboy : Hero : []
 distanceToHero :: [Tetromino] -> Maybe Int
 distanceToHero = findIndex (== Hero)
 
-pairDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
-pairDistances [] = []
-pairDistances xs@(x:rest) = (x, distanceToHero xs) : pairDistances rest
+tagDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
+tagDistances [] = []
+tagDistances xs@(x:rest) = (x, distanceToHero xs) : tagDistances rest
 
 duplicate' :: [a] -> [[a]]
 duplicate' [] = []
 duplicate' xs@(_:rest) = xs : duplicate' rest
 
-pairDistances' :: [Tetromino] -> [(Tetromino, Maybe Int)]
-pairDistances' xs = pair <$> duplicate' xs
+tagDistances' :: [Tetromino] -> [(Tetromino, Maybe Int)]
+tagDistances' xs = pair <$> duplicate' xs
   where
     pair [] = error "hrmmmm?"
     pair ys@(y:_) = (y, distanceToHero ys)
@@ -31,11 +31,11 @@ balloon :: ([a] -> b) -> [a] -> [b]
 balloon f = fmap f . duplicate'
 
 
-pairDistances'' :: [Tetromino] -> [(Tetromino, Maybe Int)]
-pairDistances'' = balloon pair
+tagDistances'' :: [Tetromino] -> [(Tetromino, Maybe Int)]
+tagDistances'' = balloon pair
   where
     pair :: [Tetromino] -> (Tetromino, Maybe Int)
     pair xs = (head xs, distanceToHero xs)
 
-pairDistances''' :: NonEmpty Tetromino -> NonEmpty (Tetromino, Maybe Int)
-pairDistances''' = extend $ \xs -> (extract xs, distanceToHero $ toList xs)
+tagDistances''' :: NonEmpty Tetromino -> NonEmpty (Tetromino, Maybe Int)
+tagDistances''' = extend $ \xs -> (extract xs, distanceToHero $ toList xs)

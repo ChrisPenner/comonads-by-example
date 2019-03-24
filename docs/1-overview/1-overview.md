@@ -1,3 +1,13 @@
+build-lists: true
+theme: Ostrich, 3
+
+^ background-color: #0F0E0E
+^ text: #FF5481
+^ header: #FF5481
+^ text-emphasis: #FFFFFF
+^ text-strong: #FF5481
+^ code: auto(25)
+
 #[fit] Comonads
 #[fit] __comonoids in the category of endofunctors__
 #[fit] __what's the problem?__
@@ -19,15 +29,37 @@
 
 ---
 
-# What the heck
-
 Comonads help to write programs which concern *values* and their *surroundings*.
+
+---
 
 Monads typically manipulate *__EFFECTS__*
 
 *Co*monads typically manipulate *__DATA__*
 
-Let's start by thinking of some data-types where values have a *context*
+---
+
+# [fit] Simulation
+
+---
+
+# [fit] Hill climbing
+
+---
+
+# [fit] Image processing
+
+---
+
+# [fit] Spreadsheets
+
+---
+
+# [fit] Statistics
+
+---
+
+__context__ual datatypes
 
 
 ---
@@ -44,13 +76,70 @@ Let's start by thinking of some data-types where values have a *context*
 
 ---
 
+# Spreadsheets
+
+![inline](./images/spreadsheet.png)
+
+---
+
 # Zipper
 
 ![inline](./images/zipper.png)
 
 ---
 
-# Tetris
+# Functions
+
+![inline](./images/function-plot.png)
+
+---
+
+# Skill Trees
+
+![](./images/skill-tree.jpg)
+
+---
+
+![](./images/skill-tree.jpg)
+
+---
+
+![inline](./images/skill-tree-demo-1.png)
+
+---
+
+![inline](./images/skill-tree-demo-2.png)
+
+---
+
+![inline](./images/skill-tree-demo-3.png)
+
+---
+
+![inline](./images/skill-tree-demo-4.png)
+
+---
+
+![inline](./images/skill-tree-demo-5.png)
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
@@ -58,13 +147,11 @@ Let's start by thinking of some data-types where values have a *context*
 
 ---
 
-![fit original](./images/upnext.png)
+![fit original](./images/clear.jpg)
 
 ---
 
 ```haskell
-import Data.List.NonEmpty
-
 data Tetromino = Ricky | Island | Hero | Teewee | Smashboy
     deriving (Eq, Show)
 
@@ -74,13 +161,40 @@ upNext = Ricky : Smashboy : Hero : Teewee : []
 
 ---
 
+![fit original](./images/upnext.png)
+
+---
+
 ```haskell
 distanceToHero :: [Tetromino] -> Maybe Int
-distanceToHero ts = findIndex (== Hero) ts
+distanceToHero = findIndex (== Hero)
 
-pairDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
-pairDistances [] = []
-pairDistances xs@(x:rest) = (x, distanceToHero xs) : pairDistances rest
+tagDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
+tagDistances [] = []
+tagDistances xs@(x:rest) = (x, distanceToHero xs) : pairDistances rest
+```
+
+---
+
+#[fit] Avoiding explicit recursion
+####__(most of the time)__
+
+---
+
+```haskell
+tagDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
+tagDistances [] = []
+tagDistances xs@(x:rest) 
+    = (x, distanceToHero xs) : pairDistances rest
+```
+
+---
+
+```haskell
+tagDistances xs@(x:rest) 
+    = go (x, distanceToHero xs) : tagDistances rest
+  where
+    go xs = head xs
 ```
 
 ---
@@ -99,6 +213,20 @@ duplicate xs@(_:rest) = xs : duplicate rest
 
 ---
 
+
+List
+
+![inline 100%](./images/list-demo-1.png)
+
+---
+
+List
+
+![inline 100%](./images/list-demo-1.png)
+![inline](./images/list-demo-2.png)
+
+---
+
 ```haskell
 duplicate :: [a] -> [[a]]
 
@@ -114,22 +242,10 @@ pairDistances'' = balloon pair
 
 ---
 
-List
-
-![inline 100%](./images/list-demo-1.png)
-
----
-
-List
-
-![inline 100%](./images/list-demo-1.png)
-![inline](./images/list-demo-2.png)
-
----
-
 # Tree
 
 ![inline](./images/tree-demo-1.png)
+
 
 ---
 
@@ -177,12 +293,21 @@ List
     -   Explore how the methods of the Comonad typeclass accomplish these
         behaviours and implement some trivial comonads to solve a few simple
         problems (e.g. Identity, Env, NonEmpty list)
+
+--- 
+
 2.  Solving problems with 'extend'
     -   Implement the List Zipper comonad together and solve the 'trapped
         rainwater' google interview problem problem using 'extend'.
+
+---
+
 3.  Store Comonads
     -   Intro to the Store comonad, using pos and seek.
     -   Implement Newton's method to solve square roots using the Store Comonad
+
+---
+
 4.  Grid-based Comonads, exploring context using 'experiment'
     -   Quick intro to representable functors and
         Control.Comonad.Representable.Store
@@ -190,12 +315,16 @@ List
         experiment
     -   Quick exploration of electricity and water flow simulations using
         similar techniques
+---
+
 5.  Image processing using Comonads
     -   Matrices as Representable Store Comonads
     -   Implement a simple sliding window 'Blur' using extend and experiment.
     -   Explore more complex image processing algorithms, e.g. edge detection,
         median colour selection, etc.
 
+
+---
 
 Bonus topics:
 
