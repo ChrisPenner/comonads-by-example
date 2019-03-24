@@ -1,6 +1,7 @@
 module Zipper.Watershed where
 
 import Zipper.Data
+import Control.Comonad
 
 problem :: Zipper Int
 problem = fromList [3, 0, 0, 2, 0, 4]

@@ -124,18 +124,49 @@ __context__ual datatypes
 
 ---
 
+# Derivatives
 
+---
 
+#  $$ \sqrt{ 16 } $$
 
+---
 
+$$ x = \sqrt{ 16 } $$
 
+$$ x^2 = (\sqrt{ 16 })^2 $$
 
+$$ x^2 = 16 $$
 
+$$ x^2 - 16 = 0 $$
 
+---
 
+![fit](./images/root-16.png)
 
+---
 
+![fit](./images/derivative-point.png)
 
+---
+
+![fit](./images/derivative-context.png)
+
+---
+
+![fit](./images/derivative.png)
+
+---
+
+![fit](./images/derivative-plot.png)
+
+---
+
+![ fill](./images/derivative-plot.png)
+
+![ fill](./images/derivative.png)
+
+---
 
 
 

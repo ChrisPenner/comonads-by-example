@@ -25,7 +25,7 @@ import Control.Arrow
 
 -- Solution for the square root of 612
 f :: Double -> Double
-f x = (x ^ 2) - 612
+f x = (x ^ (2 :: Integer)) - 612
 
 -- Derivative of f
 f' :: Double -> Double

@@ -4,7 +4,8 @@
 
 # orange="#ed553c"
 focused="#f3b134"
-neutral="#0b94a1"
+neutral="#B7D7D8"
+bgfocused="#0b94a1"
 selected="#48ab6c"
 
 header=$(cat <<EOF
@@ -58,7 +59,7 @@ graph skill-tree-demo-2 <<EOF
 subgraph cluster_a {
     color="$selected"
     penwidth="7"
-    bgcolor="$neutral"
+    bgcolor="$bgfocused"
     label="7 Total"
     style=rounded;
 
@@ -77,9 +78,9 @@ graph skill-tree-demo-3 <<EOF
 a[label="Magic (7)\n2/5\n" penwidth="3" style="filled" fillcolor="$neutral"]
 
 subgraph cluster_a {
-    color="$selected"
+    color="$neutral"
     penwidth="7"
-    bgcolor="$neutral"
+    bgcolor="$bgfocused"
     label="3 Total"
     style=rounded;
 
@@ -102,7 +103,7 @@ b[label="Fireball (3)\n1/3" penwidth="3" style=filled fillcolor="$neutral"]
 subgraph cluster_a {
     color="$selected"
     penwidth="7"
-    bgcolor="$neutral"
+    bgcolor="$bgfocused"
     label="1 Total"
     style=rounded;
 
@@ -119,7 +120,7 @@ EOF
 graph skill-tree-demo-5 <<EOF
 a[label="Magic (7)\n2/5\n" penwidth="3" style="filled" fillcolor="$focused"]
 b[label="Fireball (3)\n1/3" penwidth="3" style=filled fillcolor="$selected"]
-e[label="Flamewall(1) \n0/1" penwidth="3" style=filled fillcolor="$selected"]
+e[label="Flamewall (1) \n0/1" penwidth="3" style=filled fillcolor="$selected"]
 c[label="Levitation (1)\n1/2" penwidth="3" style=filled fillcolor="$selected"]
 
 a -> b
