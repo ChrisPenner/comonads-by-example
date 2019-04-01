@@ -8,9 +8,9 @@ theme: Ostrich, 3
 ^ text-strong: #FF5481
 ^ code: auto(25)
 
-#[fit] Comonads
-#[fit] __comonoids in the category of endofunctors__
-#[fit] __what's the problem?__
+#[fit] **Comonads**
+#[fit] *comonoids in the category of endofunctors*
+#[fit] *what's the problem?*
 
 ---
 
@@ -29,33 +29,43 @@ theme: Ostrich, 3
 
 ---
 
-Comonads help to write programs which concern *values* and their *surroundings*.
+Comonads help to write programs which concern **values** and their **surroundings**.
 
 ---
 
-Monads typically manipulate *__EFFECTS__*
+Monads typically manipulate **EFFECTS**
 
-*Co*monads typically manipulate *__DATA__*
+**Co**monads typically manipulate **DATA**
 
 ---
 
 # [fit] Simulation
 
+![](./images/matrix.jpg)
+
 ---
 
 # [fit] Hill climbing
+
+![](./images/mountain.jpeg)
 
 ---
 
 # [fit] Image processing
 
+![](./images/processing.jpeg)
+
 ---
 
 # [fit] Spreadsheets
 
+![](./images/spreadsheet.jpeg)
+
 ---
 
 # [fit] Statistics
+
+![](./images/stats.jpeg)
 
 ---
 
@@ -124,21 +134,100 @@ __context__ual datatypes
 
 ---
 
+![fit](./images/questions/simpsons-questions.gif)
+
+---
+
+#[fit] **LIVE CODE IT**
+
+### *what could possibly go wrong?*
+
+---
+
+# ...
+
+---
+
+```haskell
+  value :: Tree a -> a
+
+  duplicateTree :: Tree a -> Tree (Tree a)
+
+  mapSubtrees :: (Tree a -> b) -> Tree a -> Tree b
+```
+
+---
+
+```haskell
+  extract :: Tree a -> a
+
+  duplicate :: Tree a -> Tree (Tree a)
+
+  extend :: (Tree a -> b) -> Tree a -> Tree b
+```
+
+---
+
+```haskell
+class Functor w => Comonad w where
+  extract :: w a -> a
+
+  duplicate :: w a -> w (w a)
+
+  extend :: (w a -> b) -> w a -> w b
+```
+
+---
+
+```haskell
+class Functor w => Comonad w where
+  extract :: w a -> a
+
+  duplicate :: w a -> w (w a)
+
+  extend :: (w a -> b) -> w a -> w b
+```
+
+```haskell
+class Applicative m => Monad m where
+  return :: a -> m a
+
+  join :: m (m a) -> m a
+
+  bind :: m a -> (a -> m b) -> m b
+```
+
+---
+
+```haskell
+  extract :: w a ->   a
+    vs
+  return  ::   a -> m a
+
+```
+
+---
+```haskell
+  duplicate ::    w a  -> w (w a)
+   vs
+  join      :: m (m a) ->    m a
+```
+
+---
+
+```haskell
+  extend :: (w a -> b) -> w a -> w b
+   vs
+  bind   :: m a -> (a -> m b) -> m b
+```
+
+---
+
+![fit](./images/questions/any-questions-dwight.gif)
+
+---
+
 # Derivatives
-
----
-
-#  $$ \sqrt{ 16 } $$
-
----
-
-$$ x = \sqrt{ 16 } $$
-
-$$ x^2 = (\sqrt{ 16 })^2 $$
-
-$$ x^2 = 16 $$
-
-$$ x^2 - 16 = 0 $$
 
 ---
 
@@ -168,9 +257,27 @@ $$ x^2 - 16 = 0 $$
 
 ---
 
+#[fit] Spreadsheets
+
+---
+
+![fit original](./images/formula-sheet.png)
+
+---
+
+![fit](./images/questions/ask-me-anything.gif)
+
+---
 
 
 
+
+
+
+
+---
+---
+---
 
 ---
 
@@ -298,7 +405,21 @@ pairDistances'' = balloon pair
 
 
 
+---
 
+#  $$ \sqrt{ 16 } $$
+
+---
+
+$$ x = \sqrt{ 16 } $$
+
+$$ x^2 = (\sqrt{ 16 })^2 $$
+
+$$ x^2 = 16 $$
+
+$$ x^2 - 16 = 0 $$
+
+---
 
 # Duplicate
 
@@ -362,3 +483,6 @@ Bonus topics:
 Day Convolution, Comonads as UIs, Comonads for fluid/electricity flow
 simulation, comonads in video games, tree computations using CoFree, and
 anything people ask about.
+
+
+

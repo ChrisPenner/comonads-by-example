@@ -21,5 +21,7 @@ ghc-options:
 dependencies:
 - base >=4.11.1.0
 - comonad
+- containers
+- pretty-simple
 library:
   source-dirs: src

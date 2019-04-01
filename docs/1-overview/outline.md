@@ -10,22 +10,23 @@
 2.  Solving problems with 'extend'
     -   Implement the List Zipper comonad together and solve the 'trapped
         rainwater' google interview problem problem using 'extend'.
-3.  Store Comonads
+    -   Store Comonads
     -   Intro to the Store comonad, using pos and seek.
     -   Implement Newton's method to solve square roots using the Store Comonad
-4.  Grid-based Comonads, exploring context using 'experiment'
+3.  Grid-based Comonads, exploring context using 'experiment'
     -   Quick intro to representable functors and
         Control.Comonad.Representable.Store
     -   Implement Cellular Automata via Conway's game of life simulation using
         experiment
     -   Quick exploration of electricity and water flow simulations using
         similar techniques
-5.  Image processing using Comonads
+4.  Image processing using Comonads
     -   Matrices as Representable Store Comonads
     -   Implement a simple sliding window 'Blur' using extend and experiment.
     -   Explore more complex image processing algorithms, e.g. edge detection,
         median colour selection, etc.
 
+Cofree Comonads
 
 Bonus topics:
 
