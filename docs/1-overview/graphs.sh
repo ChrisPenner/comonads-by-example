@@ -128,49 +128,103 @@ a -> c
 b -> e
 EOF
 
+graph zipper-duplicate <<EOF
+rankdir=LR;
+concentrate=true;
 
-# graph list-demo-1 <<EOF
-# rank=same;
-# a[label="a" style="filled" fillcolor="$focused"]
-# b[label="b" style=filled fillcolor="$selected"]
-# c[label="c" style=filled fillcolor="$selected"]
-# a-> b
-# b -> c
-# EOF
+subgraph cluster_0 {
+    rank=same;
+    color="$selected";
+    penwidth="7"
+    a1[label="a" penwidth="3" style=filled fillcolor="$selected"]
+    b1[label="b" penwidth="3" style="filled" fillcolor="$selected"]
+    c1[label="c" penwidth="3" style=filled fillcolor="$focused"]
+    b1 -> a1 [constraint=false]
+    c1 -> b1 [constraint=false]
 
-# graph list-demo-2 <<EOF
-# compound=true;
-# rankdir=LR;
-# subgraph cluster_a {
-#     color="$focused"
-#     label="a'"
-#     style=rounded;
-#     a1[label="a" style="filled" fillcolor="$focused"]
-#     b1[label="b" style=filled fillcolor="$selected"]
-#     c1[label="c" style=filled fillcolor="$selected"]
-#     a1-> b1
-#     b1-> c1
-# }
+}
 
-# subgraph cluster_b {
-#     color="$selected"
-#     label="b'"
-#     style=rounded;
-#     b2[label="b" style="filled" fillcolor="$focused"]
-#     c2[label="c" style="filled" fillcolor="$selected"]
-#     b2 -> c2
-# }
+subgraph cluster_1 {
+    rank=same;
+    color="$focused";
+    penwidth="7"
+    a2[label="a" penwidth="3" style=filled fillcolor="$selected"]
+    b2[label="b" penwidth="3" style="filled" fillcolor="$focused"]
+    c2[label="c" penwidth="3" style=filled fillcolor="$selected"]
+    b2 -> a2 [constraint=false]
+    b2 -> c2 [constraint=false]
+}
 
-# subgraph cluster_c {
-#     color="$selected"
-#     label="c'"
-#     style=rounded;
-#     c3[label="c" style=filled fillcolor="$focused"]
-# }
+subgraph cluster_2 {
+    rank=same;
+    color="$selected";
+    penwidth="7"
+    a3[label="a" penwidth="3" style=filled fillcolor="$focused"]
+    b3[label="b" penwidth="3" style="filled" fillcolor="$selected"]
+    c3[label="c" penwidth="3" style=filled fillcolor="$selected"]
+    a3 -> b3 [constraint=false]
+    b3 -> c3 [constraint=false]
+}
+b1 -> b2 [style=invis]
+b2 -> b1 [constraint=false]
+b2 -> b3 
+EOF
 
-# c1 -> b2 [ ltail=cluster_a, lhead=cluster_b ];
-# c2 -> c3 [ ltail=cluster_b, lhead=cluster_c ];
-# EOF
+graph zipper-small <<EOF
+rankdir=TB;
+a[penwidth="3" style=filled fillcolor="$selected"]
+b[penwidth="3" style="filled" fillcolor="$focused"]
+c[penwidth="3" style=filled fillcolor="$selected"]
+b -> a [constraint=false]
+b -> c [constraint=false]
+EOF
+
+
+graph list-demo-1 <<EOF
+rank=same;
+a[label="a" style="filled" fillcolor="$focused"]
+b[label="b" style=filled fillcolor="$selected"]
+c[label="c" style=filled fillcolor="$selected"]
+a-> b
+b -> c
+EOF
+
+graph list-demo-2 <<EOF
+compound=true;
+rankdir=LR;
+subgraph cluster_a {
+    color="$focused"
+    penwidth="7"
+    label="a'"
+    style=rounded;
+    a1[label="a" style="filled" fillcolor="$focused"]
+    b1[label="b" style=filled fillcolor="$selected"]
+    c1[label="c" style=filled fillcolor="$selected"]
+    a1-> b1
+    b1-> c1
+}
+
+subgraph cluster_b {
+    color="$selected"
+    penwidth="7"
+    label="b'"
+    style=rounded;
+    b2[label="b" style="filled" fillcolor="$focused"]
+    c2[label="c" style="filled" fillcolor="$selected"]
+    b2 -> c2
+}
+
+subgraph cluster_c {
+    color="$selected"
+    penwidth="7"
+    label="c'"
+    style=rounded;
+    c3[label="c" style=filled fillcolor="$focused"]
+}
+
+c1 -> b2 [ ltail=cluster_a, lhead=cluster_b ];
+c2 -> c3 [ ltail=cluster_b, lhead=cluster_c ];
+EOF
 
 
 # graph tree <<EOF
@@ -243,44 +297,6 @@ EOF
 # c2 -> c4 [ ltail=cluster_b, lhead=cluster_c ];
 # EOF
 
-
-# graph zipper-duplicate <<EOF
-# rankdir=LR;
-# concentrate=true;
-
-# subgraph cluster_0 {
-#     rank=same;
-#     color="$selected";
-#     a1[label="a" penwidth="3" style=filled fillcolor="$selected"]
-#     b1[label="b" penwidth="3" style="filled" fillcolor="$selected"]
-#     c1[label="c" penwidth="3" style=filled fillcolor="$focused"]
-#     b1 -> a1 [constraint=false]
-#     c1 -> b1 [constraint=false]
-
-# }
-
-# subgraph cluster_1 {
-#     rank=same;
-#     color="$focused";
-#     a2[label="a" penwidth="3" style=filled fillcolor="$selected"]
-#     b2[label="b" penwidth="3" style="filled" fillcolor="$focused"]
-#     c2[label="c" penwidth="3" style=filled fillcolor="$selected"]
-#     b2 -> a2 [constraint=false]
-#     b2 -> c2 [constraint=false]
-# }
-
-# subgraph cluster_2 {
-#     rank=same;
-#     color="$selected";
-#     a3[label="a" penwidth="3" style=filled fillcolor="$focused"]
-#     b3[label="b" penwidth="3" style="filled" fillcolor="$selected"]
-#     c3[label="c" penwidth="3" style=filled fillcolor="$selected"]
-#     a3 -> b3 [constraint=false]
-#     b3 -> c3 [constraint=false]
-# }
-# b1 -> b2 [style=invis]
-# b2 -> b3 [style=invis]
-# EOF
 
 # graph upnext <<EOF
 #     rankdir=LR

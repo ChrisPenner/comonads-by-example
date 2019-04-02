@@ -144,6 +144,17 @@ __context__ual datatypes
 
 ---
 
+
+![inline](./images/tree-demo-1.png)
+
+
+---
+
+![original fit](./images/tree-demo-1.png)
+![original fit](./images/tree-demo-2.png)
+
+---
+
 # ...
 
 ---
@@ -223,6 +234,41 @@ class Applicative m => Monad m where
 
 ---
 
+![inline](./images/list-demo-1.png)
+![inline](./images/list-demo-2.png)
+
+---
+
+![inline](./images/zipper-small.png)
+
+
+![inline](./images/zipper-duplicate.png)
+
+---
+
+![inline](./images/grids/grid-selected.png)
+
+---
+
+![inline](./images/grids/duplicate-grid.png)
+
+---
+
+![inline](./images/grids/duplicate-grid-selected.png)
+
+---
+
+# **Summary**
+
+| **Monads** | **Comonads** |
+| --- | --- | --- |
+| Manipulate *EFFECTS* | Manipulate *DATA* | 
+| do-notation | function composition |
+| opaque | inspectable |
+| can be *empty* | must have a value |
+
+---
+
 ![fit](./images/questions/any-questions-dwight.gif)
 
 ---
@@ -265,19 +311,18 @@ class Applicative m => Monad m where
 
 ---
 
+
+
+# [fit] The End
+
+---
+
 ![fit](./images/questions/ask-me-anything.gif)
 
 ---
 
 
 
-
-
-
-
----
----
----
 
 ---
 
@@ -354,13 +399,13 @@ duplicate xs@(_:rest) = xs : duplicate rest
 
 List
 
-![inline 100%](./images/list-demo-1.png)
+![inline](./images/list-demo-1.png)
 
 ---
 
 List
 
-![inline 100%](./images/list-demo-1.png)
+![inline](./images/list-demo-1.png)
 ![inline](./images/list-demo-2.png)
 
 ---
@@ -380,17 +425,6 @@ pairDistances'' = balloon pair
 
 ---
 
-# Tree
-
-![inline](./images/tree-demo-1.png)
-
-
----
-
-![original fit](./images/tree-demo-1.png)
-![original fit](./images/tree-demo-2.png)
-
----
 
 
 
@@ -427,16 +461,6 @@ $$ x^2 - 16 = 0 $$
 
 ---
 
-# Summary
-
-| Monad | Comonads |
-| --- | --- | --- |
-| Manipulate *EFFECTS* | Manipulate *DATA* | 
-| do-notation | function composition |
-| opaque | inspectable |
-| can be *empty* | must have a value |
-
----
 
 1.  Overview
     -   A high level discussion of what comonads are good for including shallow
