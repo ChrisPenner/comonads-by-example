@@ -258,6 +258,10 @@ class Applicative m => Monad m where
 
 ---
 
+![inline](./images/grids/sudoku-rules.png)
+
+---
+
 # **Summary**
 
 | **Monads** | **Comonads** |
