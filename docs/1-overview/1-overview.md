@@ -12,6 +12,10 @@ theme: Ostrich, 3
 #[fit] *comonoids in the category of endofunctors*
 #[fit] *what's the problem?*
 
+^ Cut out the Simulation/Hill-climbing style slides or at LEAST add examples
+^ Add an additional tree example (with a different solution) and show how comonad generalizes both
+^ Live code the actual comonad instance for Tree and use it to solve the problem
+
 ---
 
 #[fit] Monads
