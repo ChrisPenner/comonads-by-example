@@ -12,7 +12,6 @@ theme: Ostrich, 3
 #[fit] *comonoids in the category of endofunctors*
 #[fit] *what's the problem?*
 
-^ Cut out the Simulation/Hill-climbing style slides or at LEAST add examples
 ^ Add an additional tree example (with a different solution) and show how comonad generalizes both
 ^ Live code the actual comonad instance for Tree and use it to solve the problem
 
@@ -33,48 +32,7 @@ theme: Ostrich, 3
 
 ---
 
-Comonads help to write programs which concern **values** and their **surroundings**.
-
----
-
-Monads typically manipulate **EFFECTS**
-
-**Co**monads typically manipulate **DATA**
-
----
-
-# [fit] Simulation
-
-![](./images/matrix.jpg)
-
----
-
-# [fit] Hill climbing
-
-![](./images/mountain.jpeg)
-
----
-
-# [fit] Image processing
-
-![](./images/processing.jpeg)
-
----
-
-# [fit] Spreadsheets
-
-![](./images/spreadsheet.jpeg)
-
----
-
-# [fit] Statistics
-
-![](./images/stats.jpeg)
-
----
-
-__context__ual datatypes
-
+Comonads represent **SPACES** with a **reference point**
 
 ---
 
@@ -108,37 +66,85 @@ __context__ual datatypes
 
 ---
 
-# Skill Trees
+# Grids
 
-![](./images/skill-tree.jpg)
-
----
-
-![](./images/skill-tree.jpg)
+![inline](./images/grids/grid-selected.png)
 
 ---
 
-![inline](./images/skill-tree-demo-1.png)
+# Examples
 
 ---
 
-![inline](./images/skill-tree-demo-2.png)
+# Sequence Validation
+
+![inline](./images/list.png)
 
 ---
 
-![inline](./images/skill-tree-demo-3.png)
+# ???
+
+![inline](./images/tree.png)
 
 ---
 
-![inline](./images/skill-tree-demo-4.png)
+# Spreadsheet calculations
+
+![inline](./images/spreadsheet.png)
 
 ---
 
-![inline](./images/skill-tree-demo-5.png)
+# History/Undo Tracking
+
+![inline](./images/zipper.png)
+
+---
+
+# Derivatives
+
+![inline](./images/derivative-point.png)
+
+---
+
+![fit](./images/derivative-context.png)
+
+---
+
+![fit](./images/derivative.png)
+
+---
+
+# Conway's Game of Life
+
+![inline](./images/grids/grid-selected.png)
+
+
+---
+
+![inline](./images/grids/duplicate-grid.png)
+
+---
+
+![inline](./images/grids/duplicate-grid-selected.png)
 
 ---
 
 ![fit](./images/questions/simpsons-questions.gif)
+
+---
+
+# Image Convolution
+
+![inline](./images/convolution/animated.gif)
+
+---
+
+#[fit] Comonads as Objects
+### (a'la Gabriel Gonzalez)
+
+---
+
+CLI History
 
 ---
 
@@ -517,4 +523,67 @@ simulation, comonads in video games, tree computations using CoFree, and
 anything people ask about.
 
 
+
+
+# [fit] Simulation
+
+![](./images/matrix.jpg)
+
+---
+
+# [fit] Hill climbing
+
+![](./images/mountain.jpeg)
+
+---
+
+# [fit] Image processing
+
+![](./images/processing.jpeg)
+
+---
+
+# [fit] Spreadsheets
+
+![](./images/spreadsheet.jpeg)
+
+---
+
+# [fit] Statistics
+
+![](./images/stats.jpeg)
+
+---
+
+
+
+# Skill Trees
+
+![](./images/skill-tree.jpg)
+
+---
+
+![](./images/skill-tree.jpg)
+
+---
+
+![inline](./images/skill-tree-demo-1.png)
+
+---
+
+![inline](./images/skill-tree-demo-2.png)
+
+---
+
+![inline](./images/skill-tree-demo-3.png)
+
+---
+
+![inline](./images/skill-tree-demo-4.png)
+
+---
+
+![inline](./images/skill-tree-demo-5.png)
+
+---
 

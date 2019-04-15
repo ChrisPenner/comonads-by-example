@@ -23,5 +23,9 @@ dependencies:
 - comonad
 - containers
 - pretty-simple
+- brick
+- vty
+- kan-extensions
+- text
 library:
   source-dirs: src

@@ -18,12 +18,15 @@ fStore' :: Store Double Double
 fStore' = extend go fStore
     where
         go :: Store Double Double -> Double
-        go = derivative . experiment neighbours
+        go = slope . experiment neighbours
         neighbours :: Double -> Pair Double
         neighbours x = Pair (x-1) (x+1)
-        derivative :: Pair Double -> Double
-        derivative (Pair l r) = (r - l) / 2
+        slope :: Pair Double -> Double
+        slope (Pair l r) = (r - l) / 2
+
+f' :: Double -> Double
+f' = fst $ runStore fStore'
 
 -- Derivative of f
-f' :: Double -> Double
-f' x = 2 * x
+-- f' :: Double -> Double
+-- f' x = 2 * x
