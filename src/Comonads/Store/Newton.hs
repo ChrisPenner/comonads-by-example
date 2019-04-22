@@ -1,4 +1,4 @@
-module Store.Newton where
+module Comonads.Store.Newton where
 
 import Control.Comonad
 import Control.Comonad.Store

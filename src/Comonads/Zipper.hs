@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
-module Zipper.Data where
+module Comonads.Zipper where
 
 import Control.Comonad
 import Data.List

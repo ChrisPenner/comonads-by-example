@@ -1,4 +1,4 @@
-module List.Tetris where
+module Comonads.List.Tetris where
 
 import Data.List.NonEmpty hiding (head)
 import Data.List

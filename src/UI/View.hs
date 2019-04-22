@@ -8,12 +8,12 @@
 module UI.View (initApp, AppState, scroll, nextTab, prevTab) where
 
 import Brick
-import Brick.Widgets.Core
+-- import Brick.Widgets.Core
 import Data.Functor.Day
 import qualified Data.Text as T
 import Control.Comonad.Traced
-import Control.Comonad.Store
-import Zipper.Data
+-- import Control.Comonad.Store
+import Comonads.Zipper
 
 type AppState = Window (Widget String)
 
@@ -31,9 +31,9 @@ txt1 = "Thing one\nThing two\nThing three\nThing four"
 txt2 :: T.Text
 txt2 = "Guvat bar\nGuvat gjb\nGuvat guerr\nGuvat sbhe"
 
-type ItemList = Store Int
-itemList :: ItemList T.Text
-itemList = undefined
+-- type ItemList = Store Int
+-- itemList :: ItemList T.Text
+-- itemList = undefined
 
 liftDay :: (a -> b -> c) -> f a -> g b -> Day f g c
 liftDay h f g = Day f g h
@@ -41,8 +41,8 @@ liftDay h f g = Day f g h
 extendL :: Comonad f => (forall a. f a -> a) -> Day f g c -> Day f g c
 extendL f = trans1 (extend f)
 
-extendR :: Comonad g => (forall a. g a -> a) -> Day f g c -> Day f g c
-extendR f = trans2 (extend f)
+-- extendR :: Comonad g => (forall a. g a -> a) -> Day f g c -> Day f g c
+-- extendR f = trans2 (extend f)
 
 type ScrollPos = Traced (Sum Int)
 

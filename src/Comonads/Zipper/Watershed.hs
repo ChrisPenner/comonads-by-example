@@ -1,6 +1,6 @@
-module Zipper.Watershed where
+module Comonads.Zipper.Watershed where
 
-import Zipper.Data
+import Comonads.Zipper
 import Control.Comonad
 
 problem :: Zipper Int

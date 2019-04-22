@@ -99,6 +99,10 @@ experiment search (Store f s) = f <$> search s
 
 ---
 
+# Conway's Game of Life
+
+---
+
 # Traced a.k.a. Co-Writer
 
 ```haskell
