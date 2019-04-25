@@ -3,8 +3,8 @@ module Comonads.Transformers.Iter where
 
 import Control.Comonad.Env
 
-untilFixedPoint :: forall w a. (Comonad w, Eq a) => (w a -> a) -> w a -> w a
-untilFixedPoint f w = extendUntil2 (==) f w
+extendUntilFixedPoint :: forall w a. (Comonad w, Eq a) => (w a -> a) -> w a -> w a
+extendUntilFixedPoint f w = extendUntil2 (==) f w
 
 
 extendUntil2 :: forall w a. Comonad w => (a -> a -> Bool) -> (w a -> a) -> w a -> w a
