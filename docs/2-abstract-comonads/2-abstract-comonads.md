@@ -12,8 +12,22 @@ theme: Ostrich, 3
 
 ---
 
-# [fit] Comonads as Objects
-### a'la **Gabriel Gonzalez**
+# REVIEW
+
+
+```haskell
+class Functor w => Comonad w where
+  extract :: w a -> a
+
+  duplicate :: w a -> w (w a)
+
+  extend :: (w a -> b) -> w a -> w b
+```
+
+---
+
+# Comonads 
+## As Abstract Spaces
 
 ---
 
@@ -28,12 +42,21 @@ instance Comonad Identity where
 
 ---
 
-# Env a.k.a. Co-Reader a.k.a. ((,) e)
+# Duals
+
+---
+
+# Env a.k.a. Co-Reader 
+## `a.k.a. (e, a)`
 
 ```haskell
 data Env e a = Env e a
     deriving (Eq, Show, Functor)
+```
 
+---
+
+```haskell
 instance Comonad (Env e) where
   extract (Env _ a) = a
   duplicate w@(Env e _) = Env e w
@@ -55,12 +78,17 @@ local f (Env e a) = Env (f e) a
 
 ---
 
-# Store a.k.a. Co-State a.k.a (s, s -> a)
+# Store a.k.a. Co-State 
+## `a.k.a (s, s -> a)`
 
 ```haskell
 data Store s a = Store (s -> a) s
     deriving Functor
+```
 
+---
+
+```haskell
 instance Comonad (Store s) where
   extract (Store f s) = f s
   duplicate (Store f s) =
@@ -104,11 +132,16 @@ experiment search (Store f s) = f <$> search s
 ---
 
 # Traced a.k.a. Co-Writer
+## `a.k.a. Monoid m => m -> a`
 
 ```haskell
 newtype Traced m a = Traced (m -> a)
     deriving Functor
+```
 
+---
+
+```haskell
 instance (Monoid m) => Comonad (Traced m) where
   extract (Traced f) = f mempty
   duplicate (Traced f) =
@@ -128,9 +161,41 @@ traces f t = trace (f (extract t)) t
 
 ---
 
-- Can't get the 'index' back out
-- 'weaker' than Store just as Writer is 'weaker' than State
-- `trace` moves the focus; `traces` uses the current value to move the focus
+# Example: Function Derivative
+
+---
+
+![fit](./images/derivative/root-16.png)
+
+---
+
+![fit](./images/derivative/derivative-point.png)
+
+---
+
+![fit](./images/derivative/derivative-context.png)
+
+---
+
+![fit](./images/derivative/derivative.png)
+
+---
+
+![fit](./images/derivative/derivative-plot.png)
+
+---
+
+![ fill](./images/derivative/derivative-plot.png)
+
+![ fill](./images/derivative/derivative.png)
+
+---
+
+# Live Coding!
+
+---
+
+# Example: Configuration
 
 ---
 
@@ -179,5 +244,10 @@ Explain watershed problem
 ---
 
 Implement Zipper
+
+---
+
+# [fit] Comonads as Objects
+### a'la **Gabriel Gonzalez**
 
 ---

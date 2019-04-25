@@ -3,12 +3,12 @@ module Comonads.Traced where
 
 import Control.Comonad
 
-newtype Traced m a = Traced (m -> a)
+newtype Traced m a = Traced { runTraced :: m -> a } 
     deriving Functor
 
 instance (Monoid m) => Comonad (Traced m) where
   extract (Traced f) = f mempty
-  duplicate (Traced f) = 
+  duplicate (Traced f) =
       Traced $ \m -> Traced (f . mappend m)
   extend g = fmap g . duplicate
 

@@ -72,6 +72,83 @@ Comonads represent **SPACES** with a **reference point**
 
 ---
 
+# Stream examples
+
+```haskell
+data Stream a = a :> Stream a
+    deriving Functor
+
+```
+
+---
+
+![inline](./images/stream.png)
+
+---
+
+![inline](./images/stream-2.png)
+
+---
+
+```haskell
+ix :: Int -> Stream a -> a
+ix n _ | n < 0 = error "don't do that silly"
+ix 0 (a :> _) = a
+ix n (_ :> rest) = ix (n - 1) rest
+```
+
+---
+
+```haskell
+instance Comonad Stream where
+  extract :: Stream a -> a
+  extract (a :> _) = a
+
+  duplicate :: Stream a -> Stream (Stream a)
+  duplicate s@(_ :> rest) = s :> duplicate rest
+
+  extend :: (Stream a -> b) -> Stream a -> Stream b
+  extend f s@(_ :> rest) = f s :> extend f rest
+```
+
+---
+
+```haskell
+dropS :: Int -> Stream a -> Stream a
+dropS n = extend (ix n)
+```
+
+---
+
+```haskell
+takeS :: Int -> Stream a -> [a]
+takeS n _ | n < 0 = error "don't do that silly"
+takeS 0 _ = []
+takeS n (a :> rest) = a : takeS (n - 1) rest
+```
+
+---
+
+```haskell
+fromList :: [a] -> Stream a
+fromList xs = go (cycle xs)
+  where
+    go [] = error "don't do that silly"
+    go (a:rest) = a :> go rest
+```
+
+---
+
+```haskell
+rollingAvg :: Int -> Stream Int -> Stream Double
+rollingAvg windowSize = extend (avg . takeS windowSize)
+  where
+    avg :: [Int] -> Double
+    avg xs = fromIntegral (sum xs) / fromIntegral (length xs)
+```
+
+---
+
 # Examples
 
 ---
@@ -129,13 +206,60 @@ Comonads represent **SPACES** with a **reference point**
 
 ---
 
+# Image Convolution
+
+![inline](./images/convolution/animated.gif)
+
+---
+
 ![fit](./images/questions/simpsons-questions.gif)
 
 ---
 
-# Image Convolution
+# Rainwater Problem
 
-![inline](./images/convolution/animated.gif)
+---
+
+![fit](./images/rainwater.png)
+
+---
+
+```
+    #    
+    # o #  
+# o # # # # o #
+# o # # # # # #
+- - - - - - - -
+2 0 4 2 3 2 1 2
+```
+---
+
+#[fit] **LIVE CODE IT**
+
+### *what could possibly go wrong?*
+
+---
+
+![fit](./images/questions/any-questions-dwight.gif)
+
+---
+
+#[fit] _Zippers_
+
+![inline](./images/zipper.png)
+
+---
+
+![inline](./images/zipper-small.png)
+![inline](./images/zipper-duplicate.png)
+
+---
+
+#[fit]**_BYOZ_**
+
+Build Your Own Zipper
+
+---
 
 ---
 
@@ -144,15 +268,13 @@ Comonads represent **SPACES** with a **reference point**
 
 ---
 
+
+---
+
 CLI History
 
 ---
 
-#[fit] **LIVE CODE IT**
-
-### *what could possibly go wrong?*
-
----
 
 
 ![inline](./images/tree-demo-1.png)
@@ -284,36 +406,6 @@ class Applicative m => Monad m where
 ---
 
 ![fit](./images/questions/any-questions-dwight.gif)
-
----
-
-# Derivatives
-
----
-
-![fit](./images/root-16.png)
-
----
-
-![fit](./images/derivative-point.png)
-
----
-
-![fit](./images/derivative-context.png)
-
----
-
-![fit](./images/derivative.png)
-
----
-
-![fit](./images/derivative-plot.png)
-
----
-
-![ fill](./images/derivative-plot.png)
-
-![ fill](./images/derivative.png)
 
 ---
 

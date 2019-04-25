@@ -21,6 +21,27 @@ graph(){
     cat <(echo "$header") - <(echo "$footer") | dot -Tpng -Gdpi=800 > ./images/"$1".png
 }
 
+graph stream <<EOF
+rankdir=LR;
+bgcolor=transparent;
+a[label="a" penwidth="3" style="filled" fillcolor="$focused"]
+b[label="b" penwidth="3" style="filled" fillcolor="$selected"]
+c[label="c, d,..." penwidth="5" style="filled" fillcolor="${selected}AA"]
+a -> b
+b -> c
+EOF
+
+graph stream-2 <<EOF
+rankdir=LR;
+bgcolor=transparent;
+a[label="a" penwidth="3" style="filled" fillcolor="#FFFFFF33"]
+b[label="b" penwidth="3" style="filled" fillcolor="$focused"]
+c[label="c, d,..." penwidth="3" style="filled" fillcolor="$selected"]
+a -> b
+b -> c
+EOF
+
+
 graph list <<EOF
 rankdir=LR;
 bgcolor=transparent;
@@ -136,12 +157,11 @@ subgraph cluster_0 {
     rank=same;
     color="$selected";
     penwidth="7"
-    a1[label="a" penwidth="3" style=filled fillcolor="$selected"]
+    a1[label="a" penwidth="3" style=filled fillcolor="$focused"]
     b1[label="b" penwidth="3" style="filled" fillcolor="$selected"]
-    c1[label="c" penwidth="3" style=filled fillcolor="$focused"]
-    b1 -> a1 [constraint=false]
-    c1 -> b1 [constraint=false]
-
+    c1[label="c" penwidth="3" style=filled fillcolor="$selected"]
+    a1 -> b1 [constraint=false]
+    b1 -> c1 [constraint=false]
 }
 
 subgraph cluster_1 {
@@ -159,12 +179,14 @@ subgraph cluster_2 {
     rank=same;
     color="$selected";
     penwidth="7"
-    a3[label="a" penwidth="3" style=filled fillcolor="$focused"]
+    a3[label="a" penwidth="3" style=filled fillcolor="$selected"]
     b3[label="b" penwidth="3" style="filled" fillcolor="$selected"]
-    c3[label="c" penwidth="3" style=filled fillcolor="$selected"]
-    a3 -> b3 [constraint=false]
-    b3 -> c3 [constraint=false]
+    c3[label="c" penwidth="3" style=filled fillcolor="$focused"]
+    b3 -> a3 [constraint=false]
+    c3 -> b3 [constraint=false]
+
 }
+
 b1 -> b2 [style=invis]
 b2 -> b1 [constraint=false]
 b2 -> b3 
