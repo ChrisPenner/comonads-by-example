@@ -22,5 +22,5 @@ extendUntil check = extendUntil2 (const check)
 iterateUntil :: (a -> a -> Bool) -> (a -> a) -> a -> a
 iterateUntil check f a =
     if check a (f a)
-        then a
+        then f a
         else iterateUntil check f (f a)

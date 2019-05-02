@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
+{-# LANGUAGE InstanceSigs #-}
 module Comonads.Zipper where
 
 import Control.Comonad
@@ -32,7 +33,9 @@ moveRight (Zipper ls c (r : rs)) = Just $ Zipper (c : ls) r rs
 moveRight _                      = Nothing
 
 instance Comonad Zipper where
+  extract :: Zipper a -> a
   extract = focus
+  duplicate :: Zipper a -> Zipper (Zipper a)
   duplicate z = Zipper ls' z rs'
     where
       ls' = unfoldr (fmap pair . moveLeft) z

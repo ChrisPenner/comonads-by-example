@@ -26,20 +26,69 @@ rankdir=LR;
 bgcolor=transparent;
 a[label="a" penwidth="3" style="filled" fillcolor="$focused"]
 b[label="b" penwidth="3" style="filled" fillcolor="$selected"]
-c[label="c, d,..." penwidth="5" style="filled" fillcolor="${selected}AA"]
+c[label="..." penwidth="5" style="filled" fillcolor="${selected}AA"]
 a -> b
 b -> c
 EOF
 
-graph stream-2 <<EOF
+graph stream-next <<EOF
 rankdir=LR;
 bgcolor=transparent;
 a[label="a" penwidth="3" style="filled" fillcolor="#FFFFFF33"]
 b[label="b" penwidth="3" style="filled" fillcolor="$focused"]
-c[label="c, d,..." penwidth="3" style="filled" fillcolor="$selected"]
+c[label="..." penwidth="3" style="filled" fillcolor="#FFFFFF33"]
 a -> b
 b -> c
 EOF
+
+graph stream-drop <<EOF
+rankdir=LR;
+bgcolor=transparent;
+a[label="a" penwidth="3" style="filled" fillcolor="#FFFFFF33"]
+b[label="b" penwidth="3" style="filled" fillcolor="$focused"]
+c[label="..." penwidth="3" style="filled" fillcolor="$selected"]
+a -> b
+b -> c
+EOF
+
+graph stream-dup <<EOF
+compound=true;
+rankdir=LR;
+subgraph cluster_a {
+    color="$focused"
+    penwidth="7"
+    label="a'"
+    style=rounded;
+    a1[label="a" style="filled" fillcolor="$focused"]
+    b1[label="b" style=filled fillcolor="$selected"]
+    c1[label="..." style=filled fillcolor="$selected"]
+    a1-> b1
+    b1-> c1
+}
+
+subgraph cluster_b {
+    color="$selected"
+    penwidth="7"
+    label="b'"
+    style=rounded;
+    b2[label="b" style="filled" fillcolor="$focused"]
+    c2[label="..." style="filled" fillcolor="$selected"]
+    b2 -> c2
+}
+
+subgraph cluster_c {
+    color="$selected"
+    penwidth="7"
+    label="..."
+    style=rounded;
+    c3[label="..." style=filled fillcolor="$focused"]
+}
+
+c1 -> b2 [ ltail=cluster_a, lhead=cluster_b ];
+c2 -> c3 [ ltail=cluster_b, lhead=cluster_c ];
+EOF
+
+
 
 
 graph list <<EOF

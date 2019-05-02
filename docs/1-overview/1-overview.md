@@ -27,11 +27,6 @@ theme: Ostrich, 3
 
 ---
 
-#[fit] Duals
-![](./images/salad.png)
-
----
-
 Comonads represent **SPACES** with a **reference point**
 
 ---
@@ -72,7 +67,7 @@ Comonads represent **SPACES** with a **reference point**
 
 ---
 
-# Stream examples
+# Stream
 
 ```haskell
 data Stream a = a :> Stream a
@@ -86,15 +81,74 @@ data Stream a = a :> Stream a
 
 ---
 
-![inline](./images/stream-2.png)
+
+```haskell
+instance Comonad w where
+  extract   :: w a -> a
+  duplicate :: w a -> w (w a)
+  -- (=>>)  :: w a -> (w a -> b) ->  w b
+  extend    :: (w a -> b) -> w a -> w b
+{-# MINIMAL extract, (duplicate | extend) #-}
+
+instance Monad m where
+  return  :: a -> m a
+  join    :: m (m a) -> m a
+  (>>=)   :: m a -> (a -> m b) ->  m b
+  -- bind :: (a -> m b) -> m a -> m b
+```
 
 ---
 
 ```haskell
-ix :: Int -> Stream a -> a
-ix n _ | n < 0 = error "don't do that silly"
-ix 0 (a :> _) = a
-ix n (_ :> rest) = ix (n - 1) rest
+extract :: w a -> a
+return  :: a   -> m a
+```
+
+---
+
+```haskell
+duplicate :: w a     -> w (w a)
+join      :: m (m a) -> m a
+```
+
+---
+
+```haskell
+(=>>) :: w a -> (w a -> b) ->  w b
+(>>=) :: m a -> (a -> m b) ->  m b
+
+extend  :: (w a -> b) -> w a -> w b
+bind    :: (a -> m b) -> m a -> m b
+```
+
+---
+
+```haskell
+instance Comonad Stream where
+  extract :: Stream a -> a
+  duplicate :: Stream a -> Stream (Stream a)
+  extend :: (Stream a -> b) -> Stream a -> Stream b
+```
+
+---
+
+# Laws!
+
+```
+extend extract      = id
+extract . extend f  = f
+extend f . extend g = extend (f . extend g)
+```
+
+---
+
+```haskell
+extend  :: (w a -> b) -> w a -> w b
+extend f = fmap f . duplicate
+
+extend extract = id
+=
+fmap extract . duplicate = id
 ```
 
 ---
@@ -113,10 +167,76 @@ instance Comonad Stream where
 
 ---
 
+# ix 1
+
+![inline](./images/stream.png)
+![inline](./images/stream-next.png)
+
+---
+
+
 ```haskell
+ix :: Int -> Stream a -> a
+ix n _ | n < 0 = error "don't do that silly"
+ix 0 (a :> _) = a
+ix n (_ :> rest) = ix (n - 1) rest
+```
+
+---
+
+# drop 1 (a.k.a. tail)
+
+![inline](./images/stream.png)
+![inline](./images/stream-drop.png)
+
+---
+
+```haskell
+dropS :: Int -> Stream a -> Stream a
+```
+
+---
+
+```haskell
+dropS :: Int -> Stream a -> Stream a
+
+ix :: Int -> Stream a -> a
+
+---
+
+extract :: Stream a -> a
+duplicate :: Stream a -> Stream (Stream a)
+extend :: (Stream a -> b) -> Stream a -> Stream b
+```
+
+---
+
+```haskell
+dropS :: Int -> Stream a -> Stream a
+
+ix    :: Int -> Stream a -> a
+
+extend :: (Stream a -> b) -> Stream a -> Stream b
+```
+
+---
+
+```haskell
+-- ix    :: Int -> Stream a -> a
+-- extend :: (Stream a -> b) -> Stream a -> Stream b
+
 dropS :: Int -> Stream a -> Stream a
 dropS n = extend (ix n)
 ```
+
+---
+
+# Duplicate
+
+![inline](./images/stream.png)
+![inline](./images/stream-dup.png)
+
+^ Talk about Duplicate/Extract law
 
 ---
 
@@ -139,80 +259,70 @@ fromList xs = go (cycle xs)
 
 ---
 
+
+```haskell
+-- takeS :: Int -> Stream a -> [a]
+-- extend :: (Stream a -> b) -> Stream a -> Stream b
+
+---
+
+windows :: Int -> Stream a -> Stream [a]
+windows n = extend (takeS n)
+```
+
+---
+
+
 ```haskell
 rollingAvg :: Int -> Stream Int -> Stream Double
 rollingAvg windowSize = extend (avg . takeS windowSize)
   where
     avg :: [Int] -> Double
-    avg xs = fromIntegral (sum xs) / fromIntegral (length xs)
+    avg xs =
+          fromIntegral (sum xs)
+        / fromIntegral (length xs)
 ```
 
 ---
 
-# Examples
-
----
-
-# Sequence Validation
-
-![inline](./images/list.png)
-
----
-
-# ???
-
-![inline](./images/tree.png)
-
----
-
-# Spreadsheet calculations
-
-![inline](./images/spreadsheet.png)
-
----
-
-# History/Undo Tracking
-
-![inline](./images/zipper.png)
-
----
-
-# Derivatives
-
-![inline](./images/derivative-point.png)
-
----
-
-![fit](./images/derivative-context.png)
-
----
-
-![fit](./images/derivative.png)
-
----
-
-# Conway's Game of Life
-
-![inline](./images/grids/grid-selected.png)
-
-
----
-
-![inline](./images/grids/duplicate-grid.png)
-
----
-
-![inline](./images/grids/duplicate-grid-selected.png)
-
----
-
-# Image Convolution
-
-![inline](./images/convolution/animated.gif)
-
----
-
 ![fit](./images/questions/simpsons-questions.gif)
+
+---
+
+#[fit]**_BYOZ_**
+
+Build Your Own Zipper
+
+---
+
+```haskell
+data Zipper a =
+  Zipper
+    { left :: [a]
+    , focus :: a
+    , right :: [a]
+    }
+```
+
+---
+
+![inline](./images/zipper-small.png)
+
+---
+
+![inline](./images/zipper-small.png)
+![inline](./images/zipper-duplicate.png)
+
+---
+
+## Implement Comonad For Zipper
+
+```haskell
+instance Comonad Zipper where
+  extract :: Zipper a -> a
+  duplicate :: Zipper a -> Zipper (Zipper a)
+  extend :: (Zipper a -> b) -> Zipper a -> Zipper b
+```
 
 ---
 
@@ -240,6 +350,23 @@ rollingAvg windowSize = extend (avg . takeS windowSize)
 
 ---
 
+
+```haskell
+problem :: Zipper Int
+problem = fromList [2, 0, 4, 2, 3, 2, 1, 2]
+
+waterAtPosition :: Zipper Int -> Int
+waterAtPosition (Zipper toLeft current toRight) = max 0 (min maxLeft maxRight - current)
+  where
+    maxLeft  = maximum (0 : toLeft)
+    maxRight = maximum (0 : toRight)
+
+solution :: Zipper Int -> Int
+solution = sum . extend waterAtPosition
+```
+
+---
+
 ![fit](./images/questions/any-questions-dwight.gif)
 
 ---
@@ -255,13 +382,34 @@ rollingAvg windowSize = extend (avg . takeS windowSize)
 
 ---
 
-#[fit]**_BYOZ_**
 
-Build Your Own Zipper
+THE END 
+
+---
+
+![fit](./images/questions/ask-me-anything.gif)
 
 ---
 
+# Grids
+
+
+![inline](./images/grids/grid-selected.png)
+
 ---
+
+![inline](./images/grids/duplicate-grid.png)
+
+---
+
+![inline](./images/grids/duplicate-grid-selected.png)
+
+---
+
+![inline](./images/grids/sudoku-rules.png)
+
+---
+
 
 #[fit] Comonads as Objects
 ### (a'la Gabriel Gonzalez)
@@ -364,33 +512,6 @@ class Applicative m => Monad m where
   bind   :: m a -> (a -> m b) -> m b
 ```
 
----
-
-![inline](./images/list-demo-1.png)
-![inline](./images/list-demo-2.png)
-
----
-
-![inline](./images/zipper-small.png)
-
-
-![inline](./images/zipper-duplicate.png)
-
----
-
-![inline](./images/grids/grid-selected.png)
-
----
-
-![inline](./images/grids/duplicate-grid.png)
-
----
-
-![inline](./images/grids/duplicate-grid-selected.png)
-
----
-
-![inline](./images/grids/sudoku-rules.png)
 
 ---
 
@@ -405,10 +526,6 @@ class Applicative m => Monad m where
 
 ---
 
-![fit](./images/questions/any-questions-dwight.gif)
-
----
-
 #[fit] Spreadsheets
 
 ---
@@ -416,266 +533,3 @@ class Applicative m => Monad m where
 ![fit original](./images/formula-sheet.png)
 
 ---
-
-
-
-# [fit] The End
-
----
-
-![fit](./images/questions/ask-me-anything.gif)
-
----
-
-
-
-
----
-
-![fit original](./images/tetris-blocks.png)
-
----
-
-![fit original](./images/clear.jpg)
-
----
-
-```haskell
-data Tetromino = Ricky | Island | Hero | Teewee | Smashboy
-    deriving (Eq, Show)
-
-upNext :: [Tetromino]
-upNext = Ricky : Smashboy : Hero : Teewee : []
-```
-
----
-
-![fit original](./images/upnext.png)
-
----
-
-```haskell
-distanceToHero :: [Tetromino] -> Maybe Int
-distanceToHero = findIndex (== Hero)
-
-tagDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
-tagDistances [] = []
-tagDistances xs@(x:rest) = (x, distanceToHero xs) : pairDistances rest
-```
-
----
-
-#[fit] Avoiding explicit recursion
-####__(most of the time)__
-
----
-
-```haskell
-tagDistances :: [Tetromino] -> [(Tetromino, Maybe Int)]
-tagDistances [] = []
-tagDistances xs@(x:rest) 
-    = (x, distanceToHero xs) : pairDistances rest
-```
-
----
-
-```haskell
-tagDistances xs@(x:rest) 
-    = go (x, distanceToHero xs) : tagDistances rest
-  where
-    go xs = head xs
-```
-
----
-
-```haskell
-duplicate :: [a] -> [[a]]
-duplicate [] = []
-duplicate xs@(_:rest) = xs : duplicate rest
-
-> duplicate [1, 2, 3]
-[ [1, 2, 3]
-, [2, 3]
-, [3]
-]
-```
-
----
-
-
-List
-
-![inline](./images/list-demo-1.png)
-
----
-
-List
-
-![inline](./images/list-demo-1.png)
-![inline](./images/list-demo-2.png)
-
----
-
-```haskell
-duplicate :: [a] -> [[a]]
-
-balloon :: ([a] -> b) -> [a] -> [b]
-balloon f = fmap f . duplicate'
-
-pairDistances'' :: [Tetromino] -> [(Tetromino, Maybe Int)]
-pairDistances'' = balloon pair
-  where
-    pair :: [Tetromino] -> (Tetromino, Maybe Int)
-    pair xs = (head xs, distanceToHero xs)
-```
-
----
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-#  $$ \sqrt{ 16 } $$
-
----
-
-$$ x = \sqrt{ 16 } $$
-
-$$ x^2 = (\sqrt{ 16 })^2 $$
-
-$$ x^2 = 16 $$
-
-$$ x^2 - 16 = 0 $$
-
----
-
-# Duplicate
-
-![inline](./images/zipper-duplicate.png)
-
----
-
-
-1.  Overview
-    -   A high level discussion of what comonads are good for including shallow
-        descriptions of a few motivating examples (Zippers, Streams, Conway's
-        game of life aka cellular automata, analyzing subtrees, etc)
-    -   Explore how the methods of the Comonad typeclass accomplish these
-        behaviours and implement some trivial comonads to solve a few simple
-        problems (e.g. Identity, Env, NonEmpty list)
-
---- 
-
-2.  Solving problems with 'extend'
-    -   Implement the List Zipper comonad together and solve the 'trapped
-        rainwater' google interview problem problem using 'extend'.
-
----
-
-3.  Store Comonads
-    -   Intro to the Store comonad, using pos and seek.
-    -   Implement Newton's method to solve square roots using the Store Comonad
-
----
-
-4.  Grid-based Comonads, exploring context using 'experiment'
-    -   Quick intro to representable functors and
-        Control.Comonad.Representable.Store
-    -   Implement Cellular Automata via Conway's game of life simulation using
-        experiment
-    -   Quick exploration of electricity and water flow simulations using
-        similar techniques
----
-
-5.  Image processing using Comonads
-    -   Matrices as Representable Store Comonads
-    -   Implement a simple sliding window 'Blur' using extend and experiment.
-    -   Explore more complex image processing algorithms, e.g. edge detection,
-        median colour selection, etc.
-
-
----
-
-Bonus topics:
-
-Day Convolution, Comonads as UIs, Comonads for fluid/electricity flow
-simulation, comonads in video games, tree computations using CoFree, and
-anything people ask about.
-
-
-
-
-# [fit] Simulation
-
-![](./images/matrix.jpg)
-
----
-
-# [fit] Hill climbing
-
-![](./images/mountain.jpeg)
-
----
-
-# [fit] Image processing
-
-![](./images/processing.jpeg)
-
----
-
-# [fit] Spreadsheets
-
-![](./images/spreadsheet.jpeg)
-
----
-
-# [fit] Statistics
-
-![](./images/stats.jpeg)
-
----
-
-
-
-# Skill Trees
-
-![](./images/skill-tree.jpg)
-
----
-
-![](./images/skill-tree.jpg)
-
----
-
-![inline](./images/skill-tree-demo-1.png)
-
----
-
-![inline](./images/skill-tree-demo-2.png)
-
----
-
-![inline](./images/skill-tree-demo-3.png)
-
----
-
-![inline](./images/skill-tree-demo-4.png)
-
----
-
-![inline](./images/skill-tree-demo-5.png)
-
----
-

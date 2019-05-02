@@ -28,6 +28,12 @@ takeS n _ | n < 0 = error "don't do that silly"
 takeS 0 _ = []
 takeS n (a :> rest) = a : takeS (n - 1) rest
 
+windows :: Int -> Stream a -> Stream [a]
+windows n = extend (takeS n)
+
+cycleS :: a -> Stream a
+cycleS a = a :> cycleS a
+
 fromList :: [a] -> Stream a
 fromList xs = go (cycle xs)
   where
@@ -38,7 +44,9 @@ rollingAvg :: Int -> Stream Int -> Stream Double
 rollingAvg windowSize = extend (avg . takeS windowSize)
   where
     avg :: [Int] -> Double
-    avg xs = fromIntegral (sum xs) / fromIntegral (length xs)
+    avg xs =
+          fromIntegral (sum xs)
+        / fromIntegral (length xs)
 
 countStream :: Stream Int
 countStream = fromList [1..]

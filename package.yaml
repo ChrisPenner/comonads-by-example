@@ -27,5 +27,9 @@ dependencies:
 - vty
 - kan-extensions
 - text
+- free
+- mtl
+- adjunctions
+- distributive
 library:
   source-dirs: src
