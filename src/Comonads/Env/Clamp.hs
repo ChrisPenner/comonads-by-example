@@ -5,17 +5,18 @@ import Control.Comonad
 import Data.Bifunctor
 
 type Range = (Int, Int)
-type Location = Env (Int, Int) Int
+clamp :: Env Range Int -> Int
+clamp w = let (lowest, highest) = ask w
+           in max lowest . min highest . extract $ w
 
-clamp :: Location -> Int
-clamp l = let (lowest, highest) = ask l
-           in max lowest . min highest . extract $ l
+move :: Int -> Env Range Int -> Int
+move n = clamp . fmap (+n)
 
-move :: Int -> Location -> Location
-move n = fmap (+n)
-
-adjustUpper :: Int -> Location -> Location
+adjustUpper :: Int -> Env Range Int -> Env Range Int
 adjustUpper n = local (second (+n))
 
-adjustLower :: Int -> Location -> Location
+adjustLower :: Int -> Env Range Int -> Env Range Int
 adjustLower n = local (first (+n))
+
+x :: Env (Int, Int) Int
+x = Env (0, 5) 3

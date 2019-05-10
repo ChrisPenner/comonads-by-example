@@ -9,11 +9,13 @@ theme: Ostrich, 3
 ^ code: auto(25)
 
 #[fit] **Abstract Comonads**
+#### *for when comonads aren't abstract enough*
 
 ---
 
 # REVIEW
 
+## TODO add more review here once presentations are finalized
 
 ```haskell
 class Functor w => Comonad w where
@@ -22,6 +24,14 @@ class Functor w => Comonad w where
   duplicate :: w a -> w (w a)
 
   extend :: (w a -> b) -> w a -> w b
+```
+
+---
+
+Note on Notation
+
+```haskell
+TODO: show how to use =>> and =>= 
 ```
 
 ---
@@ -35,14 +45,10 @@ class Functor w => Comonad w where
 
 ```haskell
 instance Comonad Identity where
-    extract     = runIdentity
-    duplicate i = Identity i
-    extend f i  = Identity (f i)
+extract     = runIdentity
+duplicate i = Identity i
+extend f i  = Identity (f i)
 ```
-
----
-
-# Duals
 
 ---
 
@@ -58,9 +64,9 @@ data Env e a = Env e a
 
 ```haskell
 instance Comonad (Env e) where
-  extract (Env _ a) = a
-  duplicate w@(Env e _) = Env e w
-  extend f w@(Env e _) = Env e (f w)
+extract (Env _ a) = a
+duplicate w@(Env e _) = Env e w
+extend f w@(Env e _) = Env e (f w)
 ```
 
 ---
@@ -78,6 +84,48 @@ local f (Env e a) = Env (f e) a
 
 ---
 
+# Example
+
+```haskell
+type Range = (Int, Int)
+
+clamp :: Env Range Int -> Int
+clamp w = 
+    let (lowest, highest) = ask w
+    in max lowest . min highest . extract $ w
+```
+
+---
+
+```haskell
+move :: Int -> Env Range Int -> Env Range Int
+move n = fmap (+n)
+
+adjustUpper :: Int -> Env Range Int -> Env Range Int
+adjustUpper n = local (second (+n))
+
+adjustLower :: Int -> Env Range Int -> Env Range Int
+adjustLower n = local (first (+n))
+```
+
+---
+
+```haskell
+λ> let x = Env (0, 5) 3 :: Env Range Int
+λ> extract x
+3
+λ> x =>> move 10 -- extend (move 10) x
+Env (0,5) 5
+```
+
+---
+
+## More useful as a comonad transformer 
+
+## 😬 🤞
+
+---
+
 # Store a.k.a. Co-State 
 ## `a.k.a (s, s -> a)`
 
@@ -90,9 +138,9 @@ data Store s a = Store (s -> a) s
 
 ```haskell
 instance Comonad (Store s) where
-  extract (Store f s) = f s
-  duplicate (Store f s) =
-      Store (\s' -> Store f s') s
+extract (Store f s) = f s
+duplicate (Store f s) =
+    Store (\s' -> Store f s') s
 ```
 
 ---
@@ -111,11 +159,29 @@ peeks g (Store f s) = f (g s)
 ---
 
 ```haskell
+λ> pos countryPopulation
+"Canada"
+λ> peek "Poland" countryPopulation
+Just 38028278
+```
+
+---
+
+```haskell
 seek :: s -> Store s a -> Store s a
 seek s (Store f _) = Store f s
 
 seeks :: (s -> s) -> Store s a -> Store s a
 seeks g (Store f s) = Store f (g s)
+```
+
+--- 
+
+```haskell
+λ> pos $ seek "Germany" countryPopulation
+"Germany"
+λ> extract $ seek "Germany" countryPopulation
+Just 82438639
 ```
 
 ---
@@ -127,7 +193,31 @@ experiment search (Store f s) = f <$> search s
 
 ---
 
+```haskell
+squared :: Store Int Int
+squared = Store (^(2 :: Int)) 10
+
+λ> pos squared
+10
+λ> extract squared
+100 -- 10^2
+λ> peek 2 squared
+4 -- 2^2
+λ> extract $ seeks (+1) squared
+121 -- (10 + 1)^2
+λ> experiment (\n -> [n - 10, n + 10, n + 20, n + 30]) squared
+[ 0    -- (10-10)^2
+, 400  -- (10+10)^2
+, 900  -- (10+20)^2
+, 1600 -- (10+30)^2
+]
+```
+
+---
+
 # Conway's Game of Life
+
+TODO: Set up workshop exercise 
 
 ---
 
@@ -143,10 +233,15 @@ newtype Traced m a = Traced (m -> a)
 
 ```haskell
 instance (Monoid m) => Comonad (Traced m) where
-  extract (Traced f) = f mempty
-  duplicate (Traced f) =
-      Traced $ \m -> Traced (f . mappend m)
-  extend g = fmap g . duplicate
+extract :: Traced m a -> a
+extract (Traced f) = f mempty
+
+duplicate :: Traced m a -> Traced m (Traced m a)
+duplicate (Traced f) =
+    Traced $ \m -> Traced (f . mappend m)
+
+extend :: (Traced m a -> b) -> Traced m a -> Traced m b
+extend g = fmap g . duplicate
 ```
 
 ---

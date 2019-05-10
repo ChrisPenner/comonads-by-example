@@ -31,5 +31,7 @@ dependencies:
 - mtl
 - adjunctions
 - distributive
+- grids
+- lens
 library:
   source-dirs: src

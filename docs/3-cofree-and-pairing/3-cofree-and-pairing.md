@@ -8,7 +8,35 @@ theme: Ostrich, 3
 ^ text-strong: #FF5481
 ^ code: auto(25)
 
-#[fit] **Cofree, Comonad Pairing, Day Convolution & Comonadic UIs**
+#[fit] **Comonads for (Kinda) Free: Cofree
+
+---
+
+#[fit] What's a __co__*free* comonad?
+
+---
+
+# *Free Monad* 
+
+## a __Monad__ for any Functor
+
+---
+
+# *CoFree Comonad* 
+
+## a __Comonad__ for any Functor
+
+---
+
+
+
+
+
+
+
+
+
+
 
 
 ---
