@@ -29,14 +29,14 @@ theme: Ostrich, 3
 ---
 
 
+# Comonad Transformers
 
+---
 
-
-
-
-
-
-
+```haskell
+class ComonadTrans t where
+lower :: Comonad w => t w a -> w a 
+```
 
 
 ---

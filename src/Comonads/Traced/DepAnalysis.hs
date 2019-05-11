@@ -6,11 +6,11 @@ import           Comonads.Transformers.Iter
 
 ingredientsOf :: String -> S.Set String
 ingredientsOf "string" = S.fromList ["wool"]
-ingredientsOf "stick"  = S.fromList ["wood"]
-ingredientsOf "bow"    = S.fromList ["stick", "string"]
-ingredientsOf "arrow"  = S.fromList ["stick", "feather", "stone"]
-ingredientsOf "quiver" = S.fromList ["arrow", "bow"]
-ingredientsOf "torch"  = S.fromList ["coal", "stick"]
+ingredientsOf "sticks"  = S.fromList ["wood"]
+ingredientsOf "bow"    = S.fromList ["sticks", "string"]
+ingredientsOf "arrows"  = S.fromList ["sticks", "feathers", "stone"]
+ingredientsOf "quiver" = S.fromList ["arrows", "bow"]
+ingredientsOf "torches"  = S.fromList ["coal", "sticks"]
 ingredientsOf _        = mempty
 
 recipes :: Traced (S.Set String) (S.Set String)

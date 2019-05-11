@@ -294,13 +294,13 @@ traces f t = trace (f (extract t)) t
 
 ```haskell
 ingredientsOf :: String -> S.Set String
-ingredientsOf "string" = S.fromList ["wool"]
-ingredientsOf "stick"  = S.fromList ["wood"]
-ingredientsOf "bow"    = S.fromList ["stick", "string"]
-ingredientsOf "arrow"  = S.fromList ["stick", "feather", "stone"]
-ingredientsOf "quiver" = S.fromList ["arrow", "bow"]
-ingredientsOf "torch"  = S.fromList ["coal", "stick"]
-ingredientsOf _        = mempty
+ingredientsOf "string"  = S.fromList ["wool"]
+ingredientsOf "sticks"  = S.fromList ["wood"]
+ingredientsOf "bow"     = S.fromList ["sticks", "string"]
+ingredientsOf "arrow"   = S.fromList ["sticks", "feather", "stone"]
+ingredientsOf "quiver"  = S.fromList ["arrow", "bow"]
+ingredientsOf "torches" = S.fromList ["coal", "sticks"]
+ingredientsOf _         = mempty
 
 recipes :: Traced (S.Set String) (S.Set String)
 recipes = traced (foldMap ingredientsOf)
@@ -309,39 +309,56 @@ recipes = traced (foldMap ingredientsOf)
 ---
 
 ```haskell
-string -> wool
-stick  -> wood
-bow    -> stick, string
-arrow  -> stick, feather, stone
-quiver -> arrow, bow
-torch  -> coal, stick
+string  -> wool
+sticks  -> wood
+bow     -> sticks, string
+arrow   -> sticks, feather, stone
+quiver  -> arrow, bow
+torches -> coal, sticks
 ```
 
 ```haskell
 λ> trace ["string"] recipes
 fromList ["wool"]
-λ> trace ["string", "torch"] recipes
-fromList ["coal","stick","wool"]
-λ> extract $ recipes =>> trace ["torch"]
-fromList ["coal","stick"]
+λ> trace ["string", "torches"] recipes
+fromList ["coal","sticks","wool"]
+λ> extract $ recipes =>> trace ["torches"]
+fromList ["coal","sticks"]
 ```
 
 ---
 
 ```haskell
-string -> wool
-stick  -> wood
-bow    -> stick, string
-arrow  -> stick, feather, stone
-quiver -> arrow, bow
-torch  -> coal, stick
+string  -> wool
+sticks  -> wood
+bow     -> sticks, string
+arrow   -> sticks, feather, stone
+quiver  -> arrow, bow
+torches -> coal, sticks
 ```
 
 ```haskell
 λ> extract $ recipes =>> traces id
 fromList []
-λ> trace ["torch"] $ recipes
-fromList ["coal","stick"]
-λ> trace ["torch"] $ recipes =>> traces id
-fromList ["coal","stick","wood"]
+λ> trace ["quiver"] $ recipes
+fromList ["arrows","bow"]
+λ> trace ["quiver"] $ recipes =>> traces id
+fromList ["arrows","bow","feathers","sticks","stone","string"]
+λ> trace ["quiver"] $ recipes =>> traces id =>> traces id
+fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 ```
+
+---
+
+![inline](./images/dep-analysis/quiver.png)
+
+---
+
+![inline](./images/dep-analysis/trace-quiver.png)
+
+---
+
+![inline](./images/dep-analysis/traces-quiver.png)
+
+---
+
