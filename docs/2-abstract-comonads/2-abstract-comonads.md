@@ -290,59 +290,58 @@ traces f t = trace (f (extract t)) t
 
 ---
 
-# Example: Configuration
+# Example: Dependency Tracking
+
+```haskell
+ingredientsOf :: String -> S.Set String
+ingredientsOf "string" = S.fromList ["wool"]
+ingredientsOf "stick"  = S.fromList ["wood"]
+ingredientsOf "bow"    = S.fromList ["stick", "string"]
+ingredientsOf "arrow"  = S.fromList ["stick", "feather", "stone"]
+ingredientsOf "quiver" = S.fromList ["arrow", "bow"]
+ingredientsOf "torch"  = S.fromList ["coal", "stick"]
+ingredientsOf _        = mempty
+
+recipes :: Traced (S.Set String) (S.Set String)
+recipes = traced (foldMap ingredientsOf)
+```
 
 ---
 
-![inline](./images/cartesian-grid.png)
+```haskell
+string -> wool
+stick  -> wood
+bow    -> stick, string
+arrow  -> stick, feather, stone
+quiver -> arrow, bow
+torch  -> coal, stick
+```
+
+```haskell
+λ> trace ["string"] recipes
+fromList ["wool"]
+λ> trace ["string", "torch"] recipes
+fromList ["coal","stick","wool"]
+λ> extract $ recipes =>> trace ["torch"]
+fromList ["coal","stick"]
+```
 
 ---
 
-- absolute position
+```haskell
+string -> wool
+stick  -> wood
+bow    -> stick, string
+arrow  -> stick, feather, stone
+quiver -> arrow, bow
+torch  -> coal, stick
+```
 
-# Temperature Control
-
----
-
-# Traced
-
-# Grid position
-- relative movement 
-
-# Config Builder
-
----
-
-Env vs Reader
-http://blog.ielliott.io/comonad-transformers-in-the-wild/
-(Env can change its environment based on a computation; reader can't unless it nests (e.g. local))
-
----
-
-Compare Store to Traced via State to Writer
-
-e.g. Store / State is more powerful than Traced / Writer;
-one can be implemented in the other.
-
----
-
-Hill-climbing
-
----
-
-Newton's method
-
----
-
-Explain watershed problem
-
----
-
-Implement Zipper
-
----
-
-# [fit] Comonads as Objects
-### a'la **Gabriel Gonzalez**
-
----
+```haskell
+λ> extract $ recipes =>> traces id
+fromList []
+λ> trace ["torch"] $ recipes
+fromList ["coal","stick"]
+λ> trace ["torch"] $ recipes =>> traces id
+fromList ["coal","stick","wood"]
+```
