@@ -33,5 +33,7 @@ dependencies:
 - distributive
 - grids
 - lens
+- directory
+- recursion-schemes
 library:
   source-dirs: src

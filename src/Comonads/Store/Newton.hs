@@ -25,8 +25,8 @@ lineFuncStore = store (f &&& f') 10
 -- Take one step towards the solution to the equation
 newtonStep :: ComonadStore Double w => w (Double, Double) -> w (Double, Double)
 newtonStep = do
-    (x, dx) <- extract
-    seeks (subtract (x / dx))
+    (fx, dx) <- extract
+    seeks (subtract (fx / dx))
 
 fixPointWithinDelta :: (ComonadStore Double w) => Double -> (w (Double, Double) -> w (Double, Double)) -> w (Double, Double) -> w (Double, Double)
 fixPointWithinDelta d = iterateUntil (withinDelta `on` pos)

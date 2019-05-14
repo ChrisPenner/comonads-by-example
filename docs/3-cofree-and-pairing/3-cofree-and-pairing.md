@@ -28,6 +28,88 @@ theme: Ostrich, 3
 
 ---
 
+Let's look at some comonads we've already seen
+
+---
+
+```haskell
+type Stream a = Cofree Identity a
+```
+
+---
+
+```haskell
+type ??? a = Cofree Maybe a
+```
+
+---
+
+```haskell
+type NonEmpty a = Cofree Maybe a
+```
+
+---
+
+```haskell
+type Tree a = Cofree ??? a
+```
+---
+
+```haskell
+type Tree a = Cofree [] a
+```
+
+---
+
+
+```haskell
+type ??? e a = Cofree (Const e) a
+```
+
+---
+
+
+```haskell
+type Env e a = Cofree (Const e) a
+```
+
+---
+
+```haskell
+type Store s a = Cofree ??? a
+```
+
+---
+
+```haskell
+type Store s a = Cofree (Compose ??? ???) a
+```
+
+---
+
+```haskell
+type Store s a = Cofree (Compose ??? ((->) s)) a
+```
+
+---
+
+```haskell
+type Store s a = Cofree (Compose ((,) s) ((->) s)) a
+```
+
+---
+
+```haskell
+type ??? m a = Cofree ((->) m) a
+```
+
+---
+
+```haskell
+type Traced m a = Cofree ((->) m) a -- When `m` is a Monoid
+```
+
+---
 
 # Comonad Transformers
 
@@ -36,6 +118,41 @@ theme: Ostrich, 3
 ```haskell
 class ComonadTrans t where
 lower :: Comonad w => t w a -> w a 
+```
+
+---
+
+E.g.
+
+```haskell
+EnvT Int NonEmpty a
+
+lower :: EnvT Int NonEmpty a -> NonEmpty a
+```
+
+---
+
+# ZipperT
+
+```haskell
+ZipperT w a = ZipperT (Zipper (w a))
+
+lower :: ZipperT w a -> w a
+lower (ZipperT z) = extract z
+```
+
+---
+
+# StoreT
+
+```haskell
+type Grid = StoreT (Store Int) Int a
+```
+
+---
+
+```haskell
+cohoist :: (Comonad w, Comonad v) => (forall x. w x -> v x) -> t w a -> t v a
 ```
 
 
