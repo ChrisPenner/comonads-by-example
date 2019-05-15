@@ -5,9 +5,13 @@ module Comonads.Stream where
 
 import Control.Comonad
 import Data.Foldable
+import Data.List (intercalate)
 
 data Stream a = a :> Stream a
     deriving (Functor, Foldable)
+
+instance (Show a) => Show (Stream a) where
+  show s = intercalate " :> " (show <$> takeS 5 s) ++ " :> ..."
 
 instance Comonad Stream where
   extract :: Stream a -> a

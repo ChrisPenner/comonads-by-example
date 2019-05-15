@@ -28,10 +28,29 @@ class Functor w => Comonad w where
 
 ---
 
-Note on Notation
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> extract countStream
+1
+```
+
+---
 
 ```haskell
-TODO: show how to use =>> and =>= 
+λ> extend (ix 2) countStream
+3 :> 4 :> 5 :> 6 :> 7 :> ...
+
+λ> countStream =>> ix 2
+3 :> 4 :> 5 :> 6 :> 7 :> ...
+```
+
+---
+
+```haskell
+λ> countStream =>> ix 2 =>> takeS 3
+[3,4,5] :> [4,5,6] :> [5,6,7] :> [6,7,8] :> [7,8,9] :> ...
 ```
 
 ---
@@ -45,9 +64,9 @@ TODO: show how to use =>> and =>=
 
 ```haskell
 instance Comonad Identity where
-extract     = runIdentity
-duplicate i = Identity i
-extend f i  = Identity (f i)
+extract   (Identity a) = a
+duplicate (Identity a) = Identity (Identity a)
+extend f  (Identity a) = Identity (f (Identity a))
 ```
 
 ---
@@ -64,9 +83,9 @@ data Env e a = Env e a
 
 ```haskell
 instance Comonad (Env e) where
-extract (Env _ a) = a
-duplicate w@(Env e _) = Env e w
-extend f w@(Env e _) = Env e (f w)
+extract   (Env _ a) = a
+duplicate (Env e a) = Env e (Env e a)
+extend f  (Env e a) = Env e (f (Env e a))
 ```
 
 ---

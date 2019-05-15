@@ -11,6 +11,9 @@ instance Comonad (Env e) where
   duplicate w@(Env e _) = Env e w
   extend f w@(Env e _) = Env e (f w)
 
+env :: e -> a -> Env e a
+env = Env
+
 ask :: Env e a -> e
 ask (Env e _) = e
 
