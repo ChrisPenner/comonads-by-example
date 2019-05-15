@@ -7,11 +7,7 @@
 {-# LANGUAGE RankNTypes #-}
 module UIPairing.View (initApp, AppState) where
 
-import Brick
-import Data.Functor.Day
 import qualified Data.Text as T
-import Control.Comonad.Traced
-import Comonads.Zipper
 
 type AppState = (T.Text, Int)
 

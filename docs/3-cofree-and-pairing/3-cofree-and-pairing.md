@@ -8,7 +8,10 @@ theme: Ostrich, 3
 ^ text-strong: #FF5481
 ^ code: auto(25)
 
-#[fit] **Comonads for (Kinda) Free: Cofree
+#**Cofree**
+
+#[fit] Comonads for _Kinda_ Free
+
 
 ---
 
@@ -22,9 +25,19 @@ theme: Ostrich, 3
 
 ---
 
-# *CoFree Comonad* 
+# __Co__*Free Comonad* 
 
-## a __Comonad__ for any Functor
+## a Co__monad__ for any Functor
+
+---
+
+```haskell
+data Cofree f a = a :< f (Cofree f a)
+```
+
+---
+
+TODO: DIAGRAM OF Cofree Tree
 
 ---
 
@@ -73,8 +86,15 @@ count' = coiter next 0
 ---
 
 ```haskell
-unfold :: Functor f => (b -> (a, f b)) -> b -> Cofree f a
-unfoldM :: (Traversable f, Monad m) => (b -> m (a, f b)) -> b -> m (Cofree f a)
+unfold :: Functor f 
+        => (b -> (a, f b)) 
+        -> b 
+        -> Cofree f a
+
+unfoldM :: (Traversable f, Monad m) 
+        => (b -> m (a, f b)) 
+        -> b 
+        -> m (Cofree f a)
 ```
 
 ---
@@ -116,6 +136,18 @@ type Tree a = Cofree [] a
 ---
 
 ```haskell
+simpleTree :: Cofree [] Char
+simpleTree = 'a' :< [ 'b' :< ['c' :< []]
+                    , 'd' :< []
+                    ]
+```
+
+![right fit](./images/tree-demo-1.png)
+
+
+---
+
+```haskell
 type Tree a = Cofree [] a
 
 fileTree :: IO (Tree FilePath)
@@ -123,11 +155,6 @@ fileTree = unfoldM crawl "."
   where
     crawl :: FilePath -> IO (FilePath, [FilePath])
     crawl path = (,) path <$> listDirectory' path
-    -- Just return an empty list if reading children fails,
-    -- or if it's a file not a dir.
-    listDirectory' :: FilePath -> IO [FilePath]
-    listDirectory' path =
-        listDirectory path <|> pure []
 ```
 
 ---
@@ -206,17 +233,10 @@ type Traced m a = Cofree ((->) m) a -- When `m` is a Monoid
 ---
 
 ```haskell
-hoistCofree :: Functor f => (forall x. f x -> g x) -> Cofree f a -> Cofree g a
-```
-
----
-
-# Zipper?
-
----
-
-```haskell
-
+hoistCofree :: Functor f 
+            => (forall x. f x -> g x) 
+            -> Cofree f a 
+            -> Cofree g a
 ```
 
 ---
@@ -262,11 +282,47 @@ type Grid = StoreT (Store Int) Int a
 ---
 
 ```haskell
-cohoist :: (Comonad w, Comonad v) => (forall x. w x -> v x) -> t w a -> t v a
+cohoist :: (Comonad w, Comonad v) 
+        => (forall x. w x -> v x) 
+        -> t w a 
+        -> t v a
 ```
 
+---
+
+# Zipper?
 
 ---
+
+```haskell
+data Pair a = Pair a a
+    deriving (Show, Eq, Functor, Foldable, Traversable)
+
+type Zipper a = Cofree (Compose Pair Maybe) a
+
+moveLeft :: Zipper Int -> Maybe (Zipper Int)
+moveLeft (_ :< Compose (Pair l _)) = l
+
+moveRight :: Zipper Int -> Maybe (Zipper Int)
+moveRight (_ :< Compose (Pair _ r)) = r
+```
+
+---
+
+```haskell
+zipper :: Zipper Int
+zipper = unfold move ([-1, -2], 0, [1, 2])
+  where
+    move :: ([Int], Int, [Int]) -> (Int, Compose Pair Maybe ([Int], Int, [Int]))
+    move z@(_, focus, _) = (focus, Compose $ Pair (toLeft z) (toRight z))
+    toRight (ls, focus, r:rs) = Just (focus:ls, r, rs)
+    toRight (_, _, []) = Nothing
+    toLeft (l:ls, focus, rs) = Just (ls, l, focus:rs)
+    toLeft ([], _, _) = Nothing
+```
+
+---
+
 
 Composing Objects using Day Convolution
 

@@ -1,11 +1,13 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE DeriveFoldable #-}
 module Comonads.Stream where
 
 import Control.Comonad
+import Data.Foldable
 
 data Stream a = a :> Stream a
-    deriving Functor
+    deriving (Functor, Foldable)
 
 instance Comonad Stream where
   extract :: Stream a -> a
@@ -20,13 +22,14 @@ ix n _ | n < 0 = error "don't do that silly"
 ix 0 (a :> _) = a
 ix n (_ :> rest) = ix (n - 1) rest
 
+ix' :: Int -> Stream a -> a
+ix' n = extract . dropS n
+
 dropS :: Int -> Stream a -> Stream a
 dropS n = extend (ix n)
 
 takeS :: Int -> Stream a -> [a]
-takeS n _ | n < 0 = error "don't do that silly"
-takeS 0 _ = []
-takeS n (a :> rest) = a : takeS (n - 1) rest
+takeS n = take n . toList
 
 windows :: Int -> Stream a -> Stream [a]
 windows n = extend (takeS n)
@@ -41,12 +44,15 @@ fromList xs = go (cycle xs)
     go (a:rest) = a :> go rest
 
 rollingAvg :: Int -> Stream Int -> Stream Double
-rollingAvg windowSize = extend (avg . takeS windowSize)
-  where
-    avg :: [Int] -> Double
-    avg xs =
-          fromIntegral (sum xs)
-        / fromIntegral (length xs)
+rollingAvg windowSize = extend (windowedAvg windowSize)
+
+windowedAvg :: Int -> Stream Int -> Double
+windowedAvg windowSize s = avg (takeS windowSize s)
+
+avg :: [Int] -> Double
+avg xs =
+        fromIntegral (sum xs)
+    / fromIntegral (length xs)
 
 countStream :: Stream Int
 countStream = fromList [1..]

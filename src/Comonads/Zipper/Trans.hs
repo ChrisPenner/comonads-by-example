@@ -12,7 +12,6 @@ import Control.Comonad
 import Data.Maybe
 import Control.Comonad.Env
 import Control.Comonad.Hoist.Class
-import Control.Comonad.Trans.Class
 import Control.Arrow
 
 data ZipperT w a = ZipperT [w a] (w a) [w a]

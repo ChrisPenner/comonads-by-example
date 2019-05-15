@@ -12,9 +12,6 @@ theme: Ostrich, 3
 #[fit] *comonoids in the category of endofunctors*
 #[fit] *what's the problem?*
 
-^ Add an additional tree example (with a different solution) and show how comonad generalizes both
-^ Live code the actual comonad instance for Tree and use it to solve the problem
-
 ---
 
 #[fit] Monads
@@ -75,12 +72,146 @@ data Stream a = a :> Stream a
 
 ```
 
+```haskell
+fromList :: [a] -> Stream a
+fromList xs = go (cycle xs)
+  where
+    go [] = error "don't do that silly"
+    go (a:rest) = a :> go rest
+```
+
+
 ---
+
+```haskell
+'a' :> 'b' :> ...
+```
 
 ![inline](./images/stream.png)
 
 ---
 
+# Challenge
+
+* Compute a rolling average over a stream of integers
+
+```haskell
+rollingAvg :: Int           -- Window Size
+           -> Stream Int    -- Input Stream
+           -> Stream Double -- Stream of averages
+```
+
+---
+
+E.g. `rollingAvg 2`
+
+
+```haskell
+0 :> 2 :> 4 :> 6 :> ...
+(0 + 2) / 2 :> (2 + 4) / 2 :> (4 + 6) / 2 :>  ...
+1 :> 3 :> 5 :> 7 :> ...
+```
+
+---
+
+```haskell
+takeS :: Int -> Stream a -> [a]
+takeS n = take n . toList
+```
+
+```haskell
+λ> takeS 3 $ fromList [1..]
+[1,2,3]
+```
+
+---
+
+```haskell
+avg :: [Int] -> Double
+avg xs =
+      fromIntegral (sum xs)
+    / fromIntegral (length xs)
+```
+
+---
+
+```haskell
+windowedAvg :: Int -> Stream Int -> Double
+windowedAvg windowSize s = avg (takeS windowSize s)
+```
+
+---
+
+```haskell
+input         :: Stream Int
+windowedAvg 3 :: Stream Int -> Double
+???           :: (Stream Int -> Double) -> Stream Int -> Stream Double
+output        :: Stream Double
+```
+
+---
+
+```haskell
+??? :: (Stream Int -> Double) -> Stream Int -> Stream Double
+```
+
+```haskell
+??? :: (m a -> b) -> m a -> m b
+```
+
+---
+
+```haskell
+???  :: *(m a -> b)* -> m a -> m b
+bind :: *(a -> m b)* -> m a -> m b
+```
+
+---
+
+# Duplicate?
+
+```haskell
+duplicate :: Stream Int -> Stream (Stream Int)
+duplicate s@(_ :> next) = s :> duplicate next
+```
+
+---
+
+# Duplicate
+
+![inline](./images/stream.png)
+![inline](./images/stream-dup.png)
+
+^ Talk about Duplicate/Extract law
+
+---
+
+
+```haskell
+??? :: (Stream Int -> Double) -> Stream Int -> Stream Double
+extend f s = f <$> duplicate s
+```
+
+---
+
+```haskell
+windowedAvg :: Int -> Stream Int -> Double
+extend      :: (Stream Int -> Double) 
+            -> Stream Int 
+            -> Stream Double
+
+rollingAvg :: Int -> Stream Int -> Stream Double
+rollingAvg windowSize = extend (windowedAvg windowSize)
+```
+
+---
+
+```haskell
+extend :: *(m a -> b)* -> m a -> m b
+bind   :: *(a -> m b)* -> m a -> m b
+```
+
+---
 
 ```haskell
 instance Comonad w where
@@ -102,6 +233,8 @@ instance Monad m where
 ```haskell
 extract :: w a -> a
 return  :: a   -> m a
+
+extract :: Stream a -> a
 ```
 
 ---
@@ -109,6 +242,8 @@ return  :: a   -> m a
 ```haskell
 duplicate :: w a     -> w (w a)
 join      :: m (m a) -> m a
+
+duplicate :: Stream a     -> Stream (Stream a)
 ```
 
 ---
@@ -119,6 +254,10 @@ join      :: m (m a) -> m a
 
 extend  :: (w a -> b) -> w a -> w b
 bind    :: (a -> m b) -> m a -> m b
+
+extend :: (Stream a -> b) 
+       -> Stream a 
+       -> Stream b
 ```
 
 ---
@@ -167,13 +306,26 @@ instance Comonad Stream where
 
 ---
 
+![fit](./images/questions/ask-me-anything.gif)
+
+---
+
+Let's write some helper functions:
+
+```haskell
+ix :: Int -> Stream a -> a
+
+dropS :: Int -> Stream a -> Stream a
+```
+
+---
+
 # ix 1
 
 ![inline](./images/stream.png)
 ![inline](./images/stream-next.png)
 
 ---
-
 
 ```haskell
 ix :: Int -> Stream a -> a
@@ -190,6 +342,12 @@ ix n (_ :> rest) = ix (n - 1) rest
 ![inline](./images/stream-drop.png)
 
 ---
+
+![inline](./images/stream-next.png)
+![inline](./images/stream-dup.png)
+
+---
+
 
 ```haskell
 dropS :: Int -> Stream a -> Stream a
@@ -231,59 +389,16 @@ dropS n = extend (ix n)
 
 ---
 
-# Duplicate
-
-![inline](./images/stream.png)
-![inline](./images/stream-dup.png)
-
-^ Talk about Duplicate/Extract law
-
----
-
 ```haskell
-takeS :: Int -> Stream a -> [a]
-takeS n _ | n < 0 = error "don't do that silly"
-takeS 0 _ = []
-takeS n (a :> rest) = a : takeS (n - 1) rest
+dropS :: Int -> Stream a -> Stream a
+extract :: Stream a -> a
+
+ix' :: Int -> Stream a -> a
+ix' n = extract . dropS n
 ```
 
 ---
 
-```haskell
-fromList :: [a] -> Stream a
-fromList xs = go (cycle xs)
-  where
-    go [] = error "don't do that silly"
-    go (a:rest) = a :> go rest
-```
-
----
-
-
-```haskell
--- takeS :: Int -> Stream a -> [a]
--- extend :: (Stream a -> b) -> Stream a -> Stream b
-
----
-
-windows :: Int -> Stream a -> Stream [a]
-windows n = extend (takeS n)
-```
-
----
-
-
-```haskell
-rollingAvg :: Int -> Stream Int -> Stream Double
-rollingAvg windowSize = extend (avg . takeS windowSize)
-  where
-    avg :: [Int] -> Double
-    avg xs =
-          fromIntegral (sum xs)
-        / fromIntegral (length xs)
-```
-
----
 
 ![fit](./images/questions/simpsons-questions.gif)
 
@@ -306,12 +421,22 @@ data Zipper a =
 
 ---
 
+#[fit] _Zippers_
+
+![inline](./images/zipper.png)
+
+---
+
+```haskell
+Zipper { left = ['a'] , focus = 'b' , right = ['c'] }
+```
+
 ![inline](./images/zipper-small.png)
 
 ---
 
-![inline](./images/zipper-small.png)
-![inline](./images/zipper-duplicate.png)
+![right fit](./images/zipper-duplicate.png)
+![left fit](./images/zipper-small.png)
 
 ---
 
@@ -334,19 +459,13 @@ instance Comonad Zipper where
 
 ---
 
-```
-    #    
-    # o #  
-# o # # # # o #
-# o # # # # # #
-- - - - - - - -
-2 0 4 2 3 2 1 2
-```
----
-
 #[fit] **LIVE CODE IT**
 
 ### *what could possibly go wrong?*
+
+---
+
+TODO: Add diagram showing zipper extend solution
 
 ---
 
@@ -371,23 +490,10 @@ solution = sum . extend waterAtPosition
 
 ---
 
-#[fit] _Zippers_
-
-![inline](./images/zipper.png)
-
----
-
-![inline](./images/zipper-small.png)
-![inline](./images/zipper-duplicate.png)
-
----
-
-
 THE END 
 
 ---
 
-![fit](./images/questions/ask-me-anything.gif)
 
 ---
 
@@ -410,23 +516,7 @@ THE END
 
 ---
 
-
-#[fit] Comonads as Objects
-### (a'la Gabriel Gonzalez)
-
----
-
-
----
-
-CLI History
-
----
-
-
-
 ![inline](./images/tree-demo-1.png)
-
 
 ---
 
@@ -511,25 +601,13 @@ class Applicative m => Monad m where
    vs
   bind   :: m a -> (a -> m b) -> m b
 ```
-
-
 ---
 
-# **Summary**
-
-| **Monads** | **Comonads** |
-| --- | --- | --- |
-| Manipulate *EFFECTS* | Manipulate *DATA* | 
-| do-notation | function composition |
-| opaque | inspectable |
-| can be *empty* | must have a value |
-
----
-
-#[fit] Spreadsheets
-
----
-
-![fit original](./images/formula-sheet.png)
-
----
+```
+    #    
+    # o #  
+# o # # # # o #
+# o # # # # # #
+- - - - - - - -
+2 0 4 2 3 2 1 2
+```

@@ -42,6 +42,11 @@ alphabet = coiter maybeNext 'a'
 
 type Tree a = Cofree [] a
 
+simpleTree :: Cofree [] Char
+simpleTree = 'a' :< [ 'b' :< ['c' :< []]
+                    , 'd' :< []
+                    ]
+
 fileTree :: IO (Tree FilePath)
 fileTree = unfoldM crawl "."
   where
