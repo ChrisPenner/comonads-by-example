@@ -39,6 +39,47 @@ type Stream a = Cofree Identity a
 ---
 
 ```haskell
+[0, 1, 2, 3, ...]
+=~
+0 :< Identity (1 :< Identity (2 :< Identity (3 :< ...)))
+```
+
+---
+
+```haskell
+count :: Cofree Identity Int
+count = 0 :< Identity (fmap (+1) count)
+```
+
+---
+
+```haskell
+coiter :: Functor f 
+       => (a -> f a) 
+       -> a 
+       -> Cofree f a
+```
+
+---
+
+```haskell
+count' :: Cofree Identity Int
+count' = coiter next 0
+  where
+    next :: Int -> Identity Int
+    next n = Identity (n + 1)
+```
+
+---
+
+```haskell
+unfold :: Functor f => (b -> (a, f b)) -> b -> Cofree f a
+unfoldM :: (Traversable f, Monad m) => (b -> m (a, f b)) -> b -> m (Cofree f a)
+```
+
+---
+
+```haskell
 type ??? a = Cofree Maybe a
 ```
 
@@ -46,6 +87,19 @@ type ??? a = Cofree Maybe a
 
 ```haskell
 type NonEmpty a = Cofree Maybe a
+```
+
+---
+
+```haskell
+type NonEmpty a = Cofree Maybe a
+
+alphabet :: NonEmpty Char
+alphabet = coiter maybeNext 'a'
+  where
+    maybeNext :: Char -> Maybe Char
+    maybeNext 'z' = Nothing
+    maybeNext a   = Just $ succ a
 ```
 
 ---
@@ -61,13 +115,53 @@ type Tree a = Cofree [] a
 
 ---
 
+```haskell
+type Tree a = Cofree [] a
+
+fileTree :: IO (Tree FilePath)
+fileTree = unfoldM crawl "."
+  where
+    crawl :: FilePath -> IO (FilePath, [FilePath])
+    crawl path = (,) path <$> listDirectory' path
+    -- Just return an empty list if reading children fails,
+    -- or if it's a file not a dir.
+    listDirectory' :: FilePath -> IO [FilePath]
+    listDirectory' path =
+        listDirectory path <|> pure []
+```
+
+---
+
+```haskell
+λ> fileTree
+"." :<
+    [ "stack.yaml" :< []
+    , "LICENSE" :< []
+    , "CHANGELOG.md" :< []
+    , "comonads-by-example.cabal" :< []
+    , "README.md" :< []
+    , "package.yaml" :< []
+    , ".stack-work" :<
+        [ "install" :< []
+        , "dist" :< []
+        , "logs" :< []
+        , "ghci" :< []
+        ]
+    , "src" :<
+        [ "UI" :< []
+        , "Comonads" :< []
+        , "UIPairing" :< []
+        ]
+    ]
+```
+
+---
 
 ```haskell
 type ??? e a = Cofree (Const e) a
 ```
 
 ---
-
 
 ```haskell
 type Env e a = Cofree (Const e) a
@@ -107,6 +201,22 @@ type ??? m a = Cofree ((->) m) a
 
 ```haskell
 type Traced m a = Cofree ((->) m) a -- When `m` is a Monoid
+```
+
+---
+
+```haskell
+hoistCofree :: Functor f => (forall x. f x -> g x) -> Cofree f a -> Cofree g a
+```
+
+---
+
+# Zipper?
+
+---
+
+```haskell
+
 ```
 
 ---
