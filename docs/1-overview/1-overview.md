@@ -14,6 +14,22 @@ theme: Ostrich, 3
 
 ---
 
+# Outline
+
+- Slides
+- Examples
+- Implementations
+- Live Coding
+- DIY
+
+---
+
+# Get the SRC
+
+TODO: LINKY
+
+---
+
 #[fit] Monads
 ![original](./images/burrito.png)
 
@@ -23,6 +39,12 @@ theme: Ostrich, 3
 ![original](./images/salad.png)
 
 ---
+
+# [fit]DUALS
+
+---
+
+## What are they?
 
 Comonads represent **SPACES** with a **reference point**
 
@@ -58,17 +80,11 @@ Comonads represent **SPACES** with a **reference point**
 
 ---
 
-# Grids
-
-![inline](./images/grids/grid-selected.png)
-
----
-
 # Stream
 
 ```haskell
 data Stream a = a :> Stream a
-    deriving Functor
+    deriving (Functor, Foldable)
 
 ```
 
@@ -107,21 +123,21 @@ E.g. `rollingAvg 2`
 
 
 ```haskell
+λ> evens
 0 :> 2 :> 4 :> 6 :> ...
+λ> rollingAvg 2 evens
 (0 + 2) / 2 :> (2 + 4) / 2 :> (4 + 6) / 2 :>  ...
+-- reduces to
 1 :> 3 :> 5 :> 7 :> ...
 ```
 
 ---
 
 ```haskell
-takeS :: Int -> Stream a -> [a]
-takeS n = take n . toList
-```
-
-```haskell
-λ> takeS 3 $ fromList [1..]
-[1,2,3]
+windowedAvg :: Int        -- window size
+            -> Stream Int -- input stream
+            -> Double     -- avg of first window
+windowedAvg windowSize input = ???
 ```
 
 ---
@@ -136,34 +152,104 @@ avg xs =
 ---
 
 ```haskell
+windowedAvg :: Int        -- window size
+            -> Stream Int -- input stream
+            -> Double     -- avg of first window
+windowedAvg windowSize input = avg window
+    where
+      window :: [Int]
+      window = ???
+```
+
+---
+
+```haskell
+takeS :: Int -> Stream a -> [a]
+takeS n input = take n (toList input)
+```
+
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> takeS 3 countStream
+[1,2,3]
+```
+
+---
+
+```haskell
 windowedAvg :: Int -> Stream Int -> Double
-windowedAvg windowSize s = avg (takeS windowSize s)
+windowedAvg windowSize input = avg window
+  where
+    window :: [Int]
+    window = takeS windowSize input
 ```
 
 ---
 
 ```haskell
-input         :: Stream Int
+rollingAvg :: Int           -- Window Size
+           -> Stream Int    -- Input Stream
+           -> Stream Double -- Stream of averages
+
+input       :: Stream Int
+windowedAvg :: Int -> Stream Int -> Double
+output      :: Stream Double
+```
+
+---
+
+```haskell
 windowedAvg 3 :: Stream Int -> Double
-???           :: (Stream Int -> Double) -> Stream Int -> Stream Double
-output        :: Stream Double
+???           :: Stream Int -> Stream Double
 ```
 
 ---
 
 ```haskell
-??? :: (Stream Int -> Double) -> Stream Int -> Stream Double
-```
-
-```haskell
-??? :: (m a -> b) -> m a -> m b
+windowedAvg 3 :: m a -> b
+???           :: m a -> m b
 ```
 
 ---
 
+```haskell
+??? :: (m a -> b) -> (m a -> m b)
+```
+
+---
+
+## Comonad vs Monad
 ```haskell
 ???  :: *(m a -> b)* -> m a -> m b
 bind :: *(a -> m b)* -> m a -> m b
+```
+
+---
+
+## Monad
+
+```haskell
+f        :: a -> m b
+x        :: m a
+join     :: m (m a) -> m a
+
+fmap f x        :: m (m b)
+join (fmap f x) :: m b
+```
+
+---
+
+## Comonad
+
+```haskell
+f         :: Stream a -> b
+x         :: Stream a
+duplicate :: Stream a -> Stream (Stream a)
+
+duplicate x          :: Stream (Stream a)
+fmap f (duplicate x) :: Stream b
 ```
 
 ---
@@ -189,19 +275,60 @@ duplicate s@(_ :> next) = s :> duplicate next
 
 ```haskell
 ??? :: (Stream Int -> Double) -> Stream Int -> Stream Double
-extend f s = f <$> duplicate s
+??? f input = fmap f (duplicate input)
+```
+
+---
+
+```haskell
+extend :: (Stream Int -> Double) 
+       -> Stream Int 
+       -> Stream Double
+extend f input = fmap f (duplicate input)
 ```
 
 ---
 
 ```haskell
 windowedAvg :: Int -> Stream Int -> Double
+
 extend      :: (Stream Int -> Double) 
             -> Stream Int 
             -> Stream Double
 
 rollingAvg :: Int -> Stream Int -> Stream Double
-rollingAvg windowSize = extend (windowedAvg windowSize)
+rollingAvg windowSize input = 
+  extend (windowedAvg windowSize) input
+```
+
+---
+
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> duplicate countStream
+(1 :> 2 :> ...) 
+  :> (2 :> 3 :> ...) 
+  :> (3 :> 4 :>...) 
+  :> ...
+
+```
+
+---
+
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> takeS 3 countStream
+[1,2,3]
+
+λ> fmap (takeS 3) (duplicate countStream)
+[1,2,3] :> [2,3,4] :> [3,4,5] :> ...
+
+λ> extend (takeS 3) countStream
+[1,2,3] :> [2,3,4] :> [3,4,5] :> ...
 ```
 
 ---
@@ -209,6 +336,9 @@ rollingAvg windowSize = extend (windowedAvg windowSize)
 ```haskell
 extend :: *(m a -> b)* -> m a -> m b
 bind   :: *(a -> m b)* -> m a -> m b
+
+=>>  :: w a -> (w a -> b) ->  w b
+>>=  :: m a -> (a -> m b) ->  m b
 ```
 
 ---
@@ -217,7 +347,6 @@ bind   :: *(a -> m b)* -> m a -> m b
 instance Comonad w where
   extract   :: w a -> a
   duplicate :: w a -> w (w a)
-  -- (=>>)  :: w a -> (w a -> b) ->  w b
   extend    :: (w a -> b) -> w a -> w b
 {-# MINIMAL extract, (duplicate | extend) #-}
 
@@ -225,10 +354,21 @@ instance Monad m where
   return  :: a -> m a
   join    :: m (m a) -> m a
   (>>=)   :: m a -> (a -> m b) ->  m b
-  -- bind :: (a -> m b) -> m a -> m b
 ```
 
 ---
+
+# Comonad Laws!
+
+```
+extend extract      = id
+extract . extend f  = f
+extend f . extend g = extend (f . extend g)
+```
+
+---
+
+# Extract
 
 ```haskell
 extract :: w a -> a
@@ -243,51 +383,16 @@ extract :: Stream a -> a
 duplicate :: w a     -> w (w a)
 join      :: m (m a) -> m a
 
-duplicate :: Stream a     -> Stream (Stream a)
-```
-
----
-
-```haskell
-(=>>) :: w a -> (w a -> b) ->  w b
-(>>=) :: m a -> (a -> m b) ->  m b
-
-extend  :: (w a -> b) -> w a -> w b
-bind    :: (a -> m b) -> m a -> m b
-
-extend :: (Stream a -> b) 
-       -> Stream a 
-       -> Stream b
+duplicate :: Stream a -> Stream (Stream a)
 ```
 
 ---
 
 ```haskell
 instance Comonad Stream where
-  extract :: Stream a -> a
+  extract   :: Stream a -> a
   duplicate :: Stream a -> Stream (Stream a)
-  extend :: (Stream a -> b) -> Stream a -> Stream b
-```
-
----
-
-# Laws!
-
-```
-extend extract      = id
-extract . extend f  = f
-extend f . extend g = extend (f . extend g)
-```
-
----
-
-```haskell
-extend  :: (w a -> b) -> w a -> w b
-extend f = fmap f . duplicate
-
-extend extract = id
-=
-fmap extract . duplicate = id
+  extend    :: (Stream a -> b) -> Stream a -> Stream b
 ```
 
 ---
@@ -310,6 +415,35 @@ instance Comonad Stream where
 
 ---
 
+# Review
+
+---
+
+# Non-Empty Lists
+
+![inline](./images/list.png)
+
+---
+
+# Trees
+
+![inline](./images/tree.png)
+
+---
+
+# Spreadsheets
+
+![inline](./images/spreadsheet.png)
+
+---
+
+
+# Functions
+
+![inline](./images/function-plot.png)
+
+---
+
 Let's write some helper functions:
 
 ```haskell
@@ -324,6 +458,17 @@ dropS :: Int -> Stream a -> Stream a
 
 ![inline](./images/stream.png)
 ![inline](./images/stream-next.png)
+
+---
+
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+λ> ix 0 countStream
+1
+λ> ix 2 countStream
+3
+```
 
 ---
 
@@ -399,7 +544,6 @@ ix' n = extract . dropS n
 
 ---
 
-
 ![fit](./images/questions/simpsons-questions.gif)
 
 ---
@@ -407,6 +551,10 @@ ix' n = extract . dropS n
 #[fit]**_BYOZ_**
 
 Build Your Own Zipper
+
+---
+
+#[fit] _Zippers_
 
 ---
 
@@ -421,10 +569,35 @@ data Zipper a =
 
 ---
 
-#[fit] _Zippers_
+```haskell
+Zipper ['b', 'a'] 'c' ['d', 'e']
+```
 
 ![inline](./images/zipper.png)
 
+---
+
+```haskell
+Zipper ['b', 'a'] 'c' ['d', 'e']
+```
+
+![inline](./images/zipper.png)
+![inline](./images/zipper-l1.png)
+
+```haskell
+Zipper ['a'] 'b' ['c', 'd', 'e']
+```
+
+
+---
+
+![inline](./images/zipper.png)
+![inline](./images/zipper-l1.png)
+![inline](./images/zipper-l2.png)
+
+```haskell
+Zipper [] 'a' ['b', 'c', 'd', 'e']
+```
 ---
 
 ```haskell
@@ -440,6 +613,7 @@ Zipper { left = ['a'] , focus = 'b' , right = ['c'] }
 
 ---
 
+# HOMEWORK
 ## Implement Comonad For Zipper
 
 ```haskell

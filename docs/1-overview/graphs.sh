@@ -103,16 +103,43 @@ EOF
 
 graph zipper <<EOF
 rankdir=TB;
-a[label="" penwidth="3" style=filled fillcolor="$selected"]
-b[label="" penwidth="3" style=filled fillcolor="$selected"]
-c[label="" penwidth="3" style="filled" fillcolor="$focused"]
-d[label="" penwidth="3" style=filled fillcolor="$selected"]
-e[label="" penwidth="3" style=filled fillcolor="$selected"]
+a[label="a" penwidth="3" style=filled fillcolor="$selected"]
+b[label="b" penwidth="3" style=filled fillcolor="$selected"]
+c[label="c" penwidth="3" style="filled" fillcolor="$focused"]
+d[label="d" penwidth="3" style=filled fillcolor="$selected"]
+e[label="e" penwidth="3" style=filled fillcolor="$selected"]
 b -> a [constraint=false]
 c -> b [constraint=false]
 c -> d [constraint=false]
 d -> e [constraint=false]
 EOF
+
+graph zipper-l1 <<EOF
+rankdir=TB;
+a[label="a" penwidth="3" style=filled fillcolor="$selected"]
+b[label="b" penwidth="3" style=filled fillcolor="$focused"]
+c[label="c" penwidth="3" style="filled" fillcolor="$selected"]
+d[label="d" penwidth="3" style=filled fillcolor="$selected"]
+e[label="e" penwidth="3" style=filled fillcolor="$selected"]
+b -> a [constraint=false]
+b -> c [constraint=false]
+c -> d [constraint=false]
+d -> e [constraint=false]
+EOF
+
+graph zipper-l2 <<EOF
+rankdir=TB;
+a[label="a" penwidth="3" style=filled fillcolor="$focused"]
+b[label="b" penwidth="3" style=filled fillcolor="$selected"]
+c[label="c" penwidth="3" style="filled" fillcolor="$selected"]
+d[label="d" penwidth="3" style=filled fillcolor="$selected"]
+e[label="e" penwidth="3" style=filled fillcolor="$selected"]
+a -> b [constraint=false]
+b -> c [constraint=false]
+c -> d [constraint=false]
+d -> e [constraint=false]
+EOF
+
 
 graph skill-tree-demo-1 <<EOF
 a[label="Magic\n2/5" penwidth="3" style="filled" fillcolor="$focused"]
