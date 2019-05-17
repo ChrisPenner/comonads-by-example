@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Comonads.Dynamic.Cofree where
 
 import Data.Semigroup
@@ -26,6 +27,12 @@ dynWFix f w = wfix (fmap (curry f) w)
 
 dynWFix' :: Comonad w => ((a, w b) -> b) -> w a -> w b
 dynWFix' f w = extend wfix (fmap (curry f) w)
+
+-- hrmm :: forall w a b. ComonadApply w => (w (a, b) -> b) -> w a -> b
+-- hrmm f w = wfix (extend pair w)
+--   where
+--     pair :: w a ->  (w b -> b)
+--     pair wa wb = f $ liftW2 (,) wa wb
 
 -- dynFix'' :: ComonadApply w => (a -> w b -> b) -> w a -> w b
 -- dynFix'' f w = let r = liftW2 f w (duplicate r)
