@@ -1,9 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE NumericUnderscores #-}
 
 module Comonads.Store where
-
-import qualified Data.Map as M
 
 import Control.Comonad
 
@@ -34,40 +31,3 @@ seeks g (Store f s) = Store f (g s)
 experiment :: Functor f => (s -> f s) -> Store s a -> f a
 experiment search (Store f s) = f <$> search s
 
---- Examples
-
--- Using store as a Map
-
-countryPopulation :: Store String (Maybe Int)
-countryPopulation = Store (\country -> M.lookup country populations) "Canada"
-  where
-    populations =
-        M.fromList [ ("Canada",        37_279_811)
-                   , ("Poland",        38_028_278)
-                   , ("France",        65_480_710)
-                   , ("United States", 329_093_110)
-                   , ("Germany",       82_438_639)
-                   ]
-
--- > λ> pos countryPopulation
--- > "Canada"
--- > λ> peek "Poland" countryPopulation
--- > Just 38028278
--- > λ> pos $ seek "Germany" countryPopulation
--- > "Germany"
-
--- More abstract uses of Store
-
-squared :: Store Int Int
-squared = Store (^(2 :: Int)) 10
-
--- > λ> pos squared
--- > 10
--- > λ> extract squared
--- > 100
--- > λ> peek 2 squared
--- > 4
--- > λ> extract $ seeks (+1) squared
--- > 121
--- > λ> experiment (\n -> [n + 10, n + 20, n + 30]) squared
--- > [400,900,1600]

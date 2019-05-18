@@ -10,16 +10,16 @@ clamp w = let (lowest, highest) = ask w
            in max lowest . min highest . extract $ w
 
 moveBy :: Int -> Env Range Int -> Int
-moveBy n = extract . fmap (+n)
+moveBy n = clamp . fmap (+n)
 
 moveTo :: Int -> Env Range Int -> Int
-moveTo n = clamp . fmap (+n)
+moveTo n = clamp . fmap (const n)
 
-adjustUpper :: Int -> Env Range Int -> Env Range Int
-adjustUpper n = local (second (+n))
+adjustUpperBy :: Int -> Env Range Int -> Env Range Int
+adjustUpperBy n = local (second (+n))
 
-adjustLower :: Int -> Env Range Int -> Env Range Int
-adjustLower n = local (first (+n))
+adjustLowerBy :: Int -> Env Range Int -> Env Range Int
+adjustLowerBy n = local (first (+n))
 
 x :: Env (Int, Int) Int
 x = Env (0, 5) 3

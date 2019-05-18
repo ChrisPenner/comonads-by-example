@@ -65,8 +65,45 @@ class Functor w => Comonad w where
 
 ```haskell
 instance Comonad Identity where
+extract :: Identity a -> a
+extract   (Identity a) = ???
+```
+
+---
+
+# Identity
+```haskell
 extract   (Identity a) = a
+```
+---
+
+# Identity
+```haskell
+duplicate (Identity a) = ???
+```
+---
+
+# Identity
+```haskell
 duplicate (Identity a) = Identity (Identity a)
+```
+---
+
+# Identity
+```haskell
+extend :: (Identity a -> b) 
+       -> Identity a 
+       -> Identity b
+extend f  (Identity a) = ???
+```
+
+---
+
+# Identity
+```haskell
+extend :: (Identity a -> b) 
+       -> Identity a 
+       -> Identity b
 extend f  (Identity a) = Identity (f (Identity a))
 ```
 
@@ -78,6 +115,15 @@ extend f  (Identity a) = Identity (f (Identity a))
 ```haskell
 data Env e a = Env e a
     deriving (Eq, Show, Functor)
+```
+
+---
+
+```haskell
+instance Comonad (Env e) where
+extract   (Env _ a) = ???
+duplicate (Env e a) = ???
+extend f  (Env e a) = ???
 ```
 
 ---
@@ -113,13 +159,21 @@ clamp :: Env Range Int -> Int
 clamp w = 
     let (lowest, highest) = ask w
     in max lowest . min highest . extract $ w
+
+λ> clamp (Env (0, 10) 15)
+10
+λ> extend clamp (Env (0, 10) 15)
+Env (0,10) 10
 ```
 
 ---
 
 ```haskell
-move :: Int -> Env Range Int -> Env Range Int
-move n = fmap (+n)
+moveBy :: Int -> Env Range Int -> Int
+moveBy n = clamp . fmap (+n)
+
+moveTo :: Int -> Env Range Int -> Int
+moveTo n = clamp . fmap (const n)
 
 adjustUpper :: Int -> Env Range Int -> Env Range Int
 adjustUpper n = local (second (+n))
@@ -130,19 +184,29 @@ adjustLower n = local (first (+n))
 
 ---
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-6]
+[.code-highlight: 1-9]
+[.code-highlight: 1-12]
+[.code-highlight: all]
+
 ```haskell
-λ> let x = Env (0, 5) 3 :: Env Range Int
-λ> extract x
-3
-λ> x =>> move 10 -- extend (move 10) x
+λ> x = Env (0, 5) 3
+Env (0,5) 3
+
+λ> x =>> moveBy 1
+Env (0,5) 4
+
+λ> x =>> moveBy 5
 Env (0,5) 5
+
+λ> x =>> moveTo 30
+Env (0,5) 5
+
+λ> adjustUpperBy 10 x =>> moveBy 5
+Env (0,15) 8
+
 ```
-
----
-
-## More useful as a comonad transformer 
-
-## 😬 🤞
 
 ---
 
@@ -155,6 +219,10 @@ data Store s a = Store (s -> a) s
 ```
 
 ---
+
+[.code-highlight: 1-2]
+[.code-highlight: 3-4]
+[.code-highlight: all]
 
 ```haskell
 instance Comonad (Store s) where
@@ -178,6 +246,34 @@ peeks g (Store f s) = f (g s)
 
 ---
 
+# Examples: Dictionary
+
+```haskell
+populations :: Map String Int
+populations =
+    fromList [ ("Canada",        37279811)
+               , ("Poland",        38028278)
+               , ("France",        65480710)
+               , ("United States", 329093110)
+               , ("Germany",       82438639)
+               ]
+
+λ> lookup "Canada" populations
+Just 37279811
+
+λ> lookup "Wakanda" populations
+Nothing
+
+```
+
+---
+
+```haskell
+countryPopulation :: Store String (Maybe Int)
+countryPopulation 
+  = Store (\country -> lookup country populations) "Canada"
+```
+
 ```haskell
 λ> pos countryPopulation
 "Canada"
@@ -188,34 +284,23 @@ Just 38028278
 ---
 
 ```haskell
-seek :: s -> Store s a -> Store s a
-seek s (Store f _) = Store f s
+λ> popDefault = fmap (fromMaybe 0) countryPopulation
 
-seeks :: (s -> s) -> Store s a -> Store s a
-seeks g (Store f s) = Store f (g s)
-```
+λ> :t popDefault
+popDefault :: Store String Int
 
---- 
+λ> extract x
+37279811
 
-```haskell
-λ> pos $ seek "Germany" countryPopulation
-"Germany"
-λ> extract $ seek "Germany" countryPopulation
-Just 82438639
-```
-
----
-
-```haskell
-experiment :: Functor f => (s -> f s) -> Store s a -> f a
-experiment search (Store f s) = f <$> search s
+λ> peek "Wakanda" x
+0
 ```
 
 ---
 
 ```haskell
 squared :: Store Int Int
-squared = Store (^(2 :: Int)) 10
+squared = Store (\x -> x^2) 10
 
 λ> pos squared
 10
@@ -223,16 +308,59 @@ squared = Store (^(2 :: Int)) 10
 100 -- 10^2
 λ> peek 2 squared
 4 -- 2^2
-λ> extract $ seeks (+1) squared
-121 -- (10 + 1)^2
+λ> peeks (+2) squared
+144 -- (10 + 2)^2
+```
+
+---
+
+```haskell
+seek :: s -> Store s a -> Store s a
+seek s (Store f _) = Store f s
+
+seeks :: (s -> s) -> Store s a -> Store s a
+seeks g (Store f s) = Store f (g s)
+
+λ> extract $ seek 5 squared
+25 -- 5^2
+λ> extract $ seeks (+5) squared
+225 -- (10 + 5)^2
+```
+
+---
+
+```haskell
+experiment :: Functor f => (s -> f s) -> Store s a -> f a
+experiment search (Store f s) = f <$> search s
+
+λ> experiment (const ["Canada", "Poland", "Germany"]) popDefault
+[37279811, 38028278, 82438639]
+```
+
+---
+
+```haskell
 λ> experiment (\n -> [n - 10, n + 10, n + 20, n + 30]) squared
 [ 0    -- (10-10)^2
 , 400  -- (10+10)^2
 , 900  -- (10+20)^2
 , 1600 -- (10+30)^2
 ]
+
+λ> experiment (\n -> (n, n)) squared
+(10,100)
 ```
 
+---
+
+```haskell
+λ> let withN = extend (experiment (\n -> (show n, n))) squared
+λ> :t withN
+withN :: Store Int (String, Int)
+
+λ> peek 5 withN
+("5",25)
+```
 ---
 
 # Conway's Game of Life
