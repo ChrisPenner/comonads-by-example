@@ -1,5 +1,6 @@
 build-lists: true
 theme: Ostrich, 3
+slide-transition: true
 
 ^ background-color: #0F0E0E
 ^ text: #FF5481

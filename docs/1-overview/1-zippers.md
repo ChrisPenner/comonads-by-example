@@ -125,9 +125,6 @@ instance Comonad Zipper where
 
 ---
 
-# Maybe break? Review?
-
----
 
 # Rainwater Problem
 
@@ -148,15 +145,20 @@ TODO: Add diagram showing zipper extend solution
 ---
 
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-10]
+[.code-highlight: all]
 ```haskell
 problem :: Zipper Int
 problem = fromList [2, 0, 4, 2, 3, 2, 1, 2]
+-- > Zipper [] 2 [0, 4, 2, 3, 2, 1, 2]
 
 waterAtPosition :: Zipper Int -> Int
-waterAtPosition (Zipper toLeft current toRight) = max 0 (min maxLeft maxRight - current)
-  where
-    maxLeft  = maximum (0 : toLeft)
-    maxRight = maximum (0 : toRight)
+waterAtPosition (Zipper toLeft current toRight) = 
+  max 0 (min maxLeft maxRight - current)
+    where
+      maxLeft  = maximum (0 : toLeft)
+      maxRight = maximum (0 : toRight)
 
 solution :: Zipper Int -> Int
 solution = sum . extend waterAtPosition
@@ -201,84 +203,6 @@ THE END
 ![original fit](./images/tree-demo-1.png)
 ![original fit](./images/tree-demo-2.png)
 
----
-
-# ...
-
----
-
-```haskell
-  value :: Tree a -> a
-
-  duplicateTree :: Tree a -> Tree (Tree a)
-
-  mapSubtrees :: (Tree a -> b) -> Tree a -> Tree b
-```
-
----
-
-```haskell
-  extract :: Tree a -> a
-
-  duplicate :: Tree a -> Tree (Tree a)
-
-  extend :: (Tree a -> b) -> Tree a -> Tree b
-```
-
----
-
-```haskell
-class Functor w => Comonad w where
-  extract :: w a -> a
-
-  duplicate :: w a -> w (w a)
-
-  extend :: (w a -> b) -> w a -> w b
-```
-
----
-
-```haskell
-class Functor w => Comonad w where
-  extract :: w a -> a
-
-  duplicate :: w a -> w (w a)
-
-  extend :: (w a -> b) -> w a -> w b
-```
-
-```haskell
-class Applicative m => Monad m where
-  return :: a -> m a
-
-  join :: m (m a) -> m a
-
-  bind :: m a -> (a -> m b) -> m b
-```
-
----
-
-```haskell
-  extract :: w a ->   a
-    vs
-  return  ::   a -> m a
-
-```
-
----
-```haskell
-  duplicate ::    w a  -> w (w a)
-   vs
-  join      :: m (m a) ->    m a
-```
-
----
-
-```haskell
-  extend :: (w a -> b) -> w a -> w b
-   vs
-  bind   :: m a -> (a -> m b) -> m b
-```
 ---
 
 ```
