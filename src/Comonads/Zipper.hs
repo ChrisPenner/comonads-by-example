@@ -22,15 +22,15 @@ moveLeft :: Zipper a -> Maybe (Zipper a)
 moveLeft (Zipper (l : ls) c rs) = Just $ Zipper ls l (c : rs)
 moveLeft _                      = Nothing
 
+moveRight :: Zipper a -> Maybe (Zipper a)
+moveRight (Zipper ls c (r : rs)) = Just $ Zipper (c : ls) r rs
+moveRight _                      = Nothing
+
 moveRight' :: Zipper a -> Zipper a
 moveRight' z = fromMaybe z $ moveRight z
 
 moveLeft' :: Zipper a -> Zipper a
 moveLeft' z = fromMaybe z $ moveLeft z
-
-moveRight :: Zipper a -> Maybe (Zipper a)
-moveRight (Zipper ls c (r : rs)) = Just $ Zipper (c : ls) r rs
-moveRight _                      = Nothing
 
 instance Comonad Zipper where
   extract :: Zipper a -> a

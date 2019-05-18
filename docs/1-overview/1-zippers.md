@@ -27,12 +27,16 @@ data Zipper a =
 ---
 
 [.code-highlight: 1-2]
+[.code-highlight: 4-5]
 [.code-highlight: all]
 ```haskell
 λ> let z = fromList ['a', 'b', 'c', 'd', 'e']
 Zipper []  'a' ['b', 'c', 'd', 'e']
 
-λ> moveRight' . moveRight' $  z
+λ> moveRight' z
+Zipper ['a'] 'b' ['c', 'd', 'e']
+
+λ> moveRight' . moveRight' $ z
 Zipper ['b', 'a'] 'c' ['d', 'e']
 ```
 
@@ -68,6 +72,54 @@ Zipper { left = ['a'] , focus = 'b' , right = ['c'] }
 ```
 
 ![inline](./images/zipper-small.png)
+
+---
+
+# Move Right
+
+![inline](./images/zipper-l1.png)
+![inline](./images/zipper.png)
+
+---
+
+# Move Right
+
+```haskell
+moveRight :: Zipper a -> Maybe (Zipper a)
+moveRight (Zipper ls c (r : rs)) = Just $ Zipper (c : ls) r rs
+moveRight _                      = Nothing
+```
+
+[.code-highlight: 1-2]
+[.code-highlight: 1-4]
+[.code-highlight: 1-6]
+[.code-highlight: all]
+```haskell
+λ> z
+Zipper {left = "", focus = 'a', right = "bcde"}
+λ> moveLeft z
+Nothing
+λ> moveRight z
+Just (Zipper {left = "a", focus = 'b', right = "cde"})
+λ> moveRight z >>= moveRight
+Just (Zipper {left = "ba", focus = 'c', right = "de"})
+```
+
+---
+
+# Move Left
+
+```haskell
+moveLeft :: Zipper a -> Maybe (Zipper a)
+moveLeft (Zipper (l : ls) c rs) = Just $ Zipper ls l (c : rs)
+moveLeft _                      = Nothing
+```
+
+---
+
+# Duplicate
+![right fit](./images/zipper-duplicate.png)
+![left fit](./images/zipper-small.png)
 
 ---
 
@@ -110,10 +162,11 @@ Zipper
         ]
     }
 ```
+![right fit](./images/zipper-duplicate.png)
 
 ---
 
-# HOMEWORK
+# Workshop
 ## Implement Comonad For Zipper
 
 ```haskell
@@ -140,9 +193,6 @@ instance Comonad Zipper where
 
 ---
 
-TODO: Add diagram showing zipper extend solution
-
----
 
 
 [.code-highlight: 1-3]
@@ -153,16 +203,45 @@ problem :: Zipper Int
 problem = fromList [2, 0, 4, 2, 3, 2, 1, 2]
 -- > Zipper [] 2 [0, 4, 2, 3, 2, 1, 2]
 
+max0 :: [Int] -> Int
+max0 [] = 0
+max0 xs = maximum xs
+
 waterAtPosition :: Zipper Int -> Int
-waterAtPosition (Zipper toLeft current toRight) = 
-  max 0 (min maxLeft maxRight - current)
-    where
-      maxLeft  = maximum (0 : toLeft)
-      maxRight = maximum (0 : toRight)
+waterAtPosition (Zipper toLeft current toRight)
+  = max 0 (containingWallHeight - current)
+  where
+    containingWallHeight = min (max0 toLeft) (max0 toRight)
 
 solution :: Zipper Int -> Int
-solution = sum . extend waterAtPosition
+solution z = sum (extend waterAtPosition z)
 ```
+
+---
+
+```haskell
+λ> problem = fromList [2, 0, 4, 2, 3, 2, 1, 2]
+Zipper {left = [], focus = 2, right = [0,4,2,3,2,1,2]}
+
+λ> z = moveRight' problem
+Zipper {left = [2], focus = 0, right = [4,2,3,2,1,2]}
+
+λ> maxLeft = max0 (left z)
+2
+λ> maxRight = max0 (right z)
+4
+
+λ> tallestNeighbour = min maxLeft maxRight
+2
+
+λ> tallestNeighbour - focus z
+2
+
+λ> max 0 $ tallestNeighbour - focus z
+2
+```
+
+![fit right](./images/rainwater.png)
 
 ---
 
