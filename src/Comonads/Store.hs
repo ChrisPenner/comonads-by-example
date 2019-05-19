@@ -7,11 +7,14 @@ import Control.Comonad
 data Store s a = Store (s -> a) s
     deriving Functor
 
+store :: (s -> a) -> s -> Store s a
+store = Store
+
 instance Comonad (Store s) where
   extract (Store f s) = f s
   duplicate (Store f s) =
       Store (\s' -> Store f s') s
-  extend g store = g <$> duplicate store
+  extend g st = g <$> duplicate st
 
 pos :: Store s a -> s
 pos (Store _ s) = s

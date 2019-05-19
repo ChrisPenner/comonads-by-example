@@ -37,22 +37,11 @@ neighbourLocations s = mappend s <$> Neighbours
 -- * The cell has exactly 3 living neighbours
 -- OTHERWISE the cell is dead in the next iteration
 computeCellLiveness :: Grid -> Bool
-computeCellLiveness grid =
-    case (currentCellAlive, numLivingNeighbours) of
-        (True, 2) -> True
-        (_,    3) -> True
-        _         -> False
-  where
-    currentCellAlive :: Bool
-    currentCellAlive = extract grid
-    neighboursAlive :: Neighbours Bool
-    neighboursAlive = experiment neighbourLocations grid
-    numLivingNeighbours :: Int
-    numLivingNeighbours = length . filter id . toList $ neighboursAlive
+computeCellLiveness grid = undefined
 
 -- | Iterate the game of life by one step
 step :: Grid -> Grid
-step = extend computeCellLiveness
+step = undefined
 
 -- | The starting state of the grid
 startingGrid :: Grid
@@ -82,10 +71,10 @@ printGrid = putStrLn . drawGrid 10
 -- | Show several steps of the game side by side
 animateGrid :: Grid -> IO ()
 animateGrid grid =
-    -- Don't worry about this implementation
-    -- it gets super slow at larger iterations, for good reason!
-    -- It recomputes every step in all previous iterations for each next iteration
-    -- You can fix this using Comonad.Representable.Store :)
+    -- | Don't worry about this implementation
+    -- | it gets super slow at larger iterations, for good reason!
+    -- | It recomputes every step in all previous iterations for each next iteration
+    -- | You can fix this using Comonad.Representable.Store :)
     putStrLn
     . unlines
     . getZipList
@@ -94,6 +83,7 @@ animateGrid grid =
     . fmap (ZipList . lines . drawGrid 10)
     . take 4
     $ iterate step grid
+
 -- | A helper for transposing shapes onto positions in the grid
 at :: [Coord] -> Coord -> [Coord]
 coords `at` origin = map (<> origin) coords
