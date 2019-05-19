@@ -5,6 +5,7 @@ module Comonads.Store.Conway where
 
 import Control.Comonad
 import Comonads.Store
+import qualified Data.Set as S
 
 import Data.Monoid (Sum(..), Ap(..))
 import Data.Foldable (toList)
@@ -56,20 +57,21 @@ step = extend computeCellLiveness
 
 -- | The starting state of the grid
 startingGrid :: Grid
-startingGrid = store (`elem` livingCells) (0, 0)
+startingGrid = store (`S.member` livingCells) (0, 0)
   where
-    livingCells :: [Coord]
-    livingCells =  glider `at` (5, 5)
-                ++ blinker `at` (1, 1)
+    livingCells :: S.Set Coord
+    livingCells = S.fromList $
+        glider `at` (5, 5)
+     <> blinker `at` (1, 1)
 
 ---- HELPERS
 
 -- | Draws a sizeXsize portion of the given grid as a string
 drawGrid :: Int -> Grid -> String
 drawGrid size g = unlines $ do
-    x <- [0..size]
+    x <- [0..size-1]
     return $ do
-        y <- [0..size]
+        y <- [0..size-1]
         return . toChar $ peek (Sum x, Sum y) g
   where
     toChar True  = '#'
@@ -103,3 +105,12 @@ glider, blinker, beacon :: [Coord]
 glider = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
 blinker = [(0, 0), (1, 0), (2, 0)]
 beacon = [(0, 0), (1, 0), (0, 1), (3, 2), (2, 3), (3, 3)]
+
+
+conwayGrid :: Store (Sum Int, Sum Int) Bool
+conwayGrid = store checkAlive (0, 0)
+  where
+    -- checkAlive :: (Int, Int) -> Bool
+    checkAlive coord = S.member coord livingCells
+    -- livingCells :: S.Set (Int, Int)
+    livingCells = S.fromList glider

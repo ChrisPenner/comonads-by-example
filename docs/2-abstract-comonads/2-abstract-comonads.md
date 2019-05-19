@@ -365,7 +365,79 @@ withN :: Store Int (String, Int)
 
 # Conway's Game of Life
 
-TODO: Set up workshop exercise 
+![fit](./images/conway/pulsar.gif)
+
+---
+
+# Rules
+
+- LIVING cells with 2 or 3 living neighbours stays alive
+- DEAD cells with 3 living neighbours come to life
+- All other scenarios cause a cell to die
+
+---
+
+github.com/alella/GOL
+
+![fit](./images/conway/rules.gif)
+
+---
+
+![fit](./images/conway/rules.gif)
+
+---
+
+![fit](./images/conway/glider.gif)
+
+---
+
+![fit](./images/conway/glider-gun.gif)
+
+---
+
+```haskell
+conwayGrid :: Store (Int, Int) Bool
+conwayGrid = store checkAlive (0, 0)
+  where
+    checkAlive :: (Int, Int) -> Bool
+    checkAlive coord = S.member coord livingCells
+    livingCells :: S.Set (Int, Int)
+    livingCells = S.fromList [(0, 1), (1, 1), (2, 1)]
+```
+
+---
+
+```haskell
+λ> peek (0, 0) conwayGrid
+False
+
+λ> peek (1, 1) conwayGrid
+True
+
+λ> putStrLn $ drawGrid 3 conwayGrid
+.#.
+.#.
+.#.
+
+λ> putStrLn . drawGrid 3 $ step conwayGrid
+...
+###
+...
+```
+
+---
+```haskell
+λ> animateGrid conwayGrid
+..#....|.#.....|..#....|.......|.......
+#.#....|..##...|...#...|.#.#...|...#...
+.##....|.##....|.###...|..##...|.#.#...
+.......|.......|.......|..#....|..##...
+.......|.......|.......|.......|.......
+```
+
+---
+
+# *CODE* __TOUR__
 
 ---
 
