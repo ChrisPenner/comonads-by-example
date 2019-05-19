@@ -582,3 +582,8 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 
 ---
 
+# Comonad Fix!
+
+---
+
+
