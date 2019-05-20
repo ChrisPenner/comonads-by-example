@@ -57,12 +57,13 @@ step = extend computeCellLiveness
 
 -- | The starting state of the grid
 startingGrid :: Grid
-startingGrid = store (`S.member` livingCells) (0, 0)
+startingGrid = store checkAlive (0, 0)
   where
+    checkAlive :: Coord -> Bool
+    checkAlive coord = S.member coord livingCells
+
     livingCells :: S.Set Coord
-    livingCells = S.fromList $
-        glider `at` (5, 5)
-     <> blinker `at` (1, 1)
+    livingCells = S.fromList [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
 
 ---- HELPERS
 
@@ -106,11 +107,10 @@ glider = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
 blinker = [(0, 0), (1, 0), (2, 0)]
 beacon = [(0, 0), (1, 0), (0, 1), (3, 2), (2, 3), (3, 3)]
 
-
 conwayGrid :: Store (Sum Int, Sum Int) Bool
 conwayGrid = store checkAlive (0, 0)
   where
-    -- checkAlive :: (Int, Int) -> Bool
+    checkAlive :: Coord -> Bool
     checkAlive coord = S.member coord livingCells
-    -- livingCells :: S.Set (Int, Int)
+    livingCells :: S.Set Coord
     livingCells = S.fromList glider

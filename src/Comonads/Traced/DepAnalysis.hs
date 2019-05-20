@@ -17,12 +17,13 @@ ingredientsOf _         = mempty
 recipes :: Traced (S.Set String) (S.Set String)
 recipes = traced (foldMap ingredientsOf)
 
-allIngredientsFor :: Traced (S.Set String) (S.Set String)
-allIngredientsFor = extend wfix (selectNext <$> listen recipes)
-  where
-    selectNext :: (S.Set String, S.Set String)
-               -> Traced (S.Set String) (S.Set String)
-               -> S.Set String
-    selectNext (requirements, input) t
-        | S.null (S.difference requirements input) = input
-        | otherwise = trace (S.difference requirements input) t
+-- | See Comonads.Store.DepAnalysis; it's much nicer
+-- allIngredientsFor :: Traced (S.Set String) (S.Set String)
+-- allIngredientsFor = extend wfix (selectNext <$> listen recipes)
+--   where
+--     selectNext :: (S.Set String, S.Set String)
+--                -> Traced (S.Set String) (S.Set String)
+--                -> S.Set String
+--     selectNext (requirements, input) t
+--         | S.null (S.difference requirements input) = input
+--         | otherwise = trace (S.difference requirements input) t

@@ -396,38 +396,7 @@ github.com/alella/GOL
 ---
 
 ```haskell
-conwayGrid :: Store (Int, Int) Bool
-conwayGrid = store checkAlive (0, 0)
-  where
-    checkAlive :: (Int, Int) -> Bool
-    checkAlive coord = S.member coord livingCells
-    livingCells :: S.Set (Int, Int)
-    livingCells = S.fromList [(0, 1), (1, 1), (2, 1)]
-```
-
----
-
-```haskell
-λ> peek (0, 0) conwayGrid
-False
-
-λ> peek (1, 1) conwayGrid
-True
-
-λ> putStrLn $ drawGrid 3 conwayGrid
-.#.
-.#.
-.#.
-
-λ> putStrLn . drawGrid 3 $ step conwayGrid
-...
-###
-...
-```
-
----
-```haskell
-λ> animateGrid conwayGrid
+λ> animateGrid startingGrid
 ..#....|.#.....|..#....|.......|.......
 #.#....|..##...|...#...|.#.#...|...#...
 .##....|.##....|.###...|..##...|.#.#...
@@ -437,8 +406,158 @@ True
 
 ---
 
-# *CODE* __TOUR__
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: 6-8]
+[.code-highlight: 9-13]
+[.code-highlight: all]
 
+```haskell
+type Coord = (Sum Int, Sum Int)
+type Grid = Store Coord Bool
+
+startingGrid :: Grid
+startingGrid = store checkAlive (0, 0)
+  where
+    checkAlive :: Coord -> Bool
+    checkAlive coord = S.member coord livingCells
+
+    livingCells :: S.Set Coord
+    livingCells = S.fromList [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
+```
+
+---
+
+```haskell
+λ> peek (0, 0) startingGrid
+False
+
+λ> peek (1, 0) startingGrid
+True
+
+λ> putStrLn $ drawGrid 3 startingGrid
+..#
+#.#
+.##
+
+λ> putStrLn . drawGrid 3 $ step startingGrid
+.#.
+..#
+.##
+```
+
+---
+
+```haskell
+computeCellLiveness :: Store (Sum Int, Sum Int) Bool 
+                    -> Bool
+
+step :: Store (Sum Int, Sum Int) Bool
+     -> Store (Sum Int, Sum Int) Bool 
+```
+
+---
+
+# [fit] Live Coding
+### _what could_ **possibly** _go wrong???_
+
+---
+
+[.code-highlight: 1-6]
+[.code-highlight: all]
+
+```haskell
+computeCellLiveness :: Grid -> Bool
+computeCellLiveness grid =
+    case (currentCellAlive, numLivingNeighbours) of
+        (True, 2) -> True
+        (_,    3) -> True
+        _         -> False
+  where
+    currentCellAlive :: Bool
+    currentCellAlive = ???
+
+    neighboursAlive :: Neighbours Bool
+    neighboursAlive = ???
+
+    numLivingNeighbours :: Int
+    numLivingNeighbours = ???
+```
+
+---
+
+```haskell
+currentCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
+currentCellAlive grid = ???
+```
+
+---
+
+```haskell
+currentCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
+currentCellAlive grid = extract grid
+```
+
+---
+
+```haskell
+numLivingNeighbours :: Int
+numLivingNeighbours = ???
+```
+
+---
+
+```haskell
+numLivingNeighbours :: Int
+numLivingNeighbours = length . filter id . toList $ neighboursAlive
+```
+
+---
+
+```haskell
+data Neighbours a =
+    Neighbours
+      a  a  a
+      a     a
+      a  a  a
+    deriving (Show, Eq, Functor, Foldable, Traversable)
+```
+
+---
+
+```haskell
+-- | Given a coordinate, compute all the neighbours of that position.
+neighbourLocations :: Coord -> Neighbours Coord
+neighbourLocations s = mappend s <$> Neighbours
+   (-1, -1) (0, -1) (1, -1)
+   (-1,  0)         (1,  0)
+   (-1,  1) (0,  1) (1,  1)
+```
+
+---
+
+```haskell
+neighboursAlive :: Neighbours Bool
+neighboursAlive = experiment neighbourLocations grid
+```
+
+---
+
+```haskell
+computeCellLiveness :: Grid -> Bool
+computeCellLiveness grid =
+    case (currentCellAlive, numLivingNeighbours) of
+        (True, 2) -> True
+        (_,    3) -> True
+        _         -> False
+  where
+    currentCellAlive :: Bool
+    currentCellAlive = extract grid
+    neighboursAlive :: Neighbours Bool
+    neighboursAlive = experiment neighbourLocations grid
+    numLivingNeighbours :: Int
+    numLivingNeighbours = length . filter id . toList $ neighboursAlive
+```
 ---
 
 # Traced a.k.a. Co-Writer
@@ -447,6 +566,13 @@ True
 ```haskell
 newtype Traced m a = Traced (m -> a)
     deriving Functor
+```
+
+---
+
+```haskell
+step :: Grid -> Grid
+step = extend computeCellLiveness
 ```
 
 ---

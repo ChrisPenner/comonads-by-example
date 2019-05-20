@@ -1,8 +1,6 @@
 module Comonads.Store.DepAnalysis where
 
 import qualified Data.Set                   as S
-import           Comonads.Transformers.Iter
-import           Comonads.Dynamic.Cofree
 import           Control.Comonad.Store
 
 ingredientsOf :: String -> S.Set String
@@ -14,20 +12,12 @@ ingredientsOf "quiver" = S.fromList ["arrows", "bow"]
 ingredientsOf "torches"  = S.fromList ["coal", "sticks"]
 ingredientsOf _        = mempty
 
-recipeStore :: Store String (S.Set String)
-recipeStore = store ingredientsOf ""
+recipeStore :: Store (S.Set String) (S.Set String)
+recipeStore = store (foldMap ingredientsOf) mempty
 
-allDepsStore :: Store String (S.Set String)
-allDepsStore = dynFix' go recipeStore
+allDepsStore :: Store (S.Set String) (S.Set String)
+allDepsStore = extend wfix (go <$> recipeStore)
   where
-    go :: (S.Set String, Store String (S.Set String)) -> (S.Set String)
-    go (deps, _) | S.null deps = mempty
-    go (deps, rec) = deps <> foldMap (flip peek rec) deps
-
-
-allDepsOf :: String -> S.Set String
-allDepsOf s = dynWFix go (seek s recipeStore)
-  where
-    go :: (S.Set String, Store String (S.Set String)) -> (S.Set String)
-    go (deps, _) | S.null deps = mempty
-    go (deps, rec) = deps <> foldMap (flip peek rec) deps
+    go :: S.Set String -> Store (S.Set String) (S.Set String) -> (S.Set String)
+    go deps _ | S.null deps = mempty
+    go deps rec = deps <> peek deps rec
