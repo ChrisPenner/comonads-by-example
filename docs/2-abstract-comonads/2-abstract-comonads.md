@@ -150,6 +150,16 @@ local f (Env e a) = Env (f e) a
 
 ---
 
+# Env Intuition
+
+| **extract:** | Get the value | 
+| ---: | :--- |
+| **extend:** | Use the environment AND value in a computation |
+| **ask:** | What's my context? |
+| **local:** | Adjust the context |
+
+---
+
 # Example
 
 ```haskell
@@ -243,6 +253,17 @@ peek s (Store f _) = f s
 peeks :: (s -> s) -> Store s a -> a
 peeks g (Store f s) = f (g s)
 ```
+
+---
+
+# Store Intuition
+
+| **extract:** | Get the value stored at the current key   | 
+| ---: | :--- |
+| **extend:** | Shift values (peek) or combine related values |
+| **pos:** | Where am I? |
+| **peek:** | What's at this key? |
+| **seek:** | Move to another key |
 
 ---
 
@@ -569,28 +590,37 @@ newtype Traced m a = Traced (m -> a)
 ```
 
 ---
-
-```haskell
-step :: Grid -> Grid
-step = extend computeCellLiveness
-```
-
----
+# Traced a.k.a. Co-Writer
 
 ```haskell
 instance (Monoid m) => Comonad (Traced m) where
 extract :: Traced m a -> a
 extract (Traced f) = f mempty
+```
 
-duplicate :: Traced m a -> Traced m (Traced m a)
+---
+# Traced a.k.a. Co-Writer
+
+```haskell
+duplicate :: Traced m a 
+          -> Traced m (Traced m a)
 duplicate (Traced f) =
     Traced $ \m -> Traced (f . mappend m)
+```
 
-extend :: (Traced m a -> b) -> Traced m a -> Traced m b
+---
+# Traced a.k.a. Co-Writer
+
+```haskell
+extend :: (Traced m a -> b) 
+       -> Traced m a 
+       -> Traced m b
 extend g = fmap g . duplicate
 ```
 
 ---
+
+# Traced a.k.a. Co-Writer
 
 ```haskell
 trace :: m -> Traced m a -> a
@@ -599,6 +629,16 @@ trace m (Traced f) = f m
 traces :: Monoid m => (a -> m) -> Traced m a -> a
 traces f t = trace (f (extract t)) t
 ```
+
+---
+
+# Traced Intuition
+
+| **extract:** | Run the computation at my current location | 
+| ---: | :--- |
+| **extend:** | move to another location (relative) |
+| **trace** | What value is at this place near me? |
+| **traces** | Given the value at my location; decide which nearby value to look at |
 
 ---
 
