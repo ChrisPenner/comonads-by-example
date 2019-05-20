@@ -3,38 +3,38 @@ module Comonads.Traced.Derivative where
 import Comonads.Traced
 import Control.Comonad.Env
 import Data.Monoid
-import Control.Arrow ((&&&))
 
 -- Solution for the square root of 612
 solveRoot16 :: Double -> Double
-solveRoot16 x = (x ^^ (2 :: Integer)) - 612
+solveRoot16 x = (x ^ (2 :: Integer)) - 16
 
 solveRoot16T :: Traced (Sum Double) Double
 solveRoot16T  = traced (solveRoot16 . getSum)
 
-solveRoot16T' :: Traced (Sum Double) (Double, Double)
-solveRoot16T'  =  alongsideW estimateDerivative solveRoot16T
+estimateDerivativeAtPosition :: Traced (Sum Double) Double
+                             -> Double
+estimateDerivativeAtPosition w =
+    let leftY = trace (Sum (-1)) w
+        rightY = trace (Sum 1) w
+        in (rightY - leftY) / 2
 
-alongsideW :: Comonad w => (w a -> w b) -> w a -> w (a, b)
-alongsideW f = extend (extract &&& extract . f)
+-- | The same as estimateDerivativeAtPosition but in Reader form
+estimateDerivativeAtPositionReader :: Traced (Sum Double) Double
+                             -> Double
+estimateDerivativeAtPositionReader = do
+    leftY <- trace (Sum (-1))
+    rightY <- trace (Sum 1)
+    return $ (rightY - leftY) / 2
 
-estimateDerivative :: Traced (Sum Double) Double -> Traced (Sum Double) Double
-estimateDerivative tracedFunction = extend estimateDerivativeAtPosition tracedFunction
-  where
-    estimateDerivativeAtPosition :: Traced (Sum Double) Double -> Double
-    estimateDerivativeAtPosition w =
-        let leftY = trace (Sum (-1)) w
-            rightY = trace (Sum 1) w
-         in (rightY - leftY) / 2
+estimateDerivative :: Traced (Sum Double) Double
+                   -> Traced (Sum Double) Double
+estimateDerivative = extend estimateDerivativeAtPosition
 
-derivative :: (Double -> Double) -> (Double -> Double)
-derivative f = runTraced tracedDerivative . Sum
+withDerivative :: Traced (Sum Double) (Double, Double)
+withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
+
+derivativeOf :: (Double -> Double) -> (Double -> Double)
+derivativeOf f = runTraced tracedDerivative . Sum
   where
     tracedF = traced (f . getSum)
     tracedDerivative = estimateDerivative tracedF
-
-derivativeRoot16 :: Double -> Double
-derivativeRoot16 = derivative solveRoot16
-
-fAndf' :: Traced (Sum Double) (Double, Double)
-fAndf' = alongsideW estimateDerivative solveRoot16T

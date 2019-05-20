@@ -1,16 +1,21 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Comonads.Traced where
 
 import Control.Comonad
 
 newtype Traced m a = Traced { runTraced :: m -> a }
-    deriving Functor
+    deriving newtype (Functor, Applicative)
 
 instance (Monoid m) => Comonad (Traced m) where
   extract (Traced f) = f mempty
   duplicate (Traced f) =
       Traced $ \m -> Traced (f . mappend m)
   extend g = fmap g . duplicate
+
+instance (Monoid m) => ComonadApply (Traced m) where
+    Traced f <@> Traced g = Traced (f <*> g)
 
 traced :: (m -> a) -> Traced m a
 traced  = Traced

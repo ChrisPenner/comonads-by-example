@@ -646,7 +646,34 @@ traces f t = trace (f (extract t)) t
 
 ---
 
+$$
+x^2 - 16
+$$
+
 ![fit](./images/derivative/root-16.png)
+
+---
+
+![fit](./images/derivative/root-16.png)
+
+---
+
+```haskell
+rootSolver :: Double -> Traced (Sum Double) Double
+rootSolver n = Traced f
+  where
+    f :: Sum Double -> Double
+    f (Sum x) = (x^2) - n
+```
+
+
+---
+
+$$
+x = 2 
+$$
+
+![fit](./images/derivative/derivative-point.png)
 
 ---
 
@@ -672,9 +699,68 @@ traces f t = trace (f (extract t)) t
 
 ---
 
-# Live Coding!
+# Live Coding?
 
 ---
+
+```haskell
+solveRoot16 :: Double -> Double
+solveRoot16 x = (x ^ (2 :: Integer)) - 16
+
+solveRoot16T :: Traced (Sum Double) Double
+solveRoot16T  = traced (solveRoot16 . getSum)
+```
+
+---
+
+```haskell
+estimateDerivativeAtPosition :: Traced (Sum Double) Double
+                             -> Double
+estimateDerivativeAtPosition w =
+    let leftY = trace (Sum (-1)) w
+        rightY = trace (Sum 1) w
+        in (rightY - leftY) / 2
+```
+
+---
+
+```haskell
+estimateDerivativeAtPositionReader :: Traced (Sum Double) Double
+                             -> Double
+estimateDerivativeAtPositionReader = do
+    leftY <- trace (Sum (-1))
+    rightY <- trace (Sum 1)
+    return $ (rightY - leftY) / 2
+```
+
+---
+
+```haskell
+estimateDerivative :: Traced (Sum Double) Double
+                   -> Traced (Sum Double) Double
+estimateDerivative = extend estimateDerivativeAtPosition
+```
+
+---
+
+```haskell
+withDerivative :: Traced (Sum Double) (Double, Double)
+withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
+```
+
+---
+
+```haskell
+λ> trace (Sum 1) withDerivative
+(-15.0,2.0)
+λ> trace (Sum 0) withDerivative
+(-16.0,0.0)
+λ> trace (Sum 4) withDerivative
+(0.0,8.0)
+```
+
+---
+
 
 # Example: Dependency Tracking
 
