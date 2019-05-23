@@ -89,6 +89,7 @@ class Functor w => Comonad w where
 
 ---
 
+
 # Comonads 
 ## As Abstract Spaces
 
@@ -153,6 +154,7 @@ data Env e a = Env e a
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 instance Comonad (Env e) where
@@ -161,6 +163,7 @@ extract   (Env _ a) = ???
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 instance Comonad (Env e) where
@@ -169,6 +172,7 @@ extract   (Env _ a) = a
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 duplicate :: Env e a -> Env e (Env e a)
@@ -176,6 +180,7 @@ duplicate (Env e a) = ???
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 duplicate :: Env e a -> Env e (Env e a)
@@ -183,6 +188,7 @@ duplicate (Env e a) = Env e (Env e a)
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 extend :: (Env e a -> b) 
@@ -192,6 +198,7 @@ extend f  (Env e a) = ???
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 extend :: (Env e a -> b) 
@@ -201,11 +208,11 @@ extend f  (Env e a) = Env e (f (Env e a))
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 
 [.code-highlight: 1-3]
 [.code-highlight: 4-5]
-[.code-highlight: 7-8]
 [.code-highlight: all]
 ```haskell
 ask :: Env e a -> e
@@ -216,6 +223,7 @@ asks f (Env e _) = f e
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 local :: (e -> e') -> Env e a -> Env e' a
@@ -234,7 +242,28 @@ local f (Env e a) = Env (f e) a
 
 ---
 
-# Example
+# Env Example
+
+```haskell
+vowels :: String
+vowels = "aAeEiIoOuU"
+
+filtered :: Env String String -> String
+filtered w = let invalid = ask w
+              in filter (not . (`elem` invalid)) $ extract w
+
+append :: String -> Env e String -> String              
+append s w = extract w ++ s
+
+extract $ env vowels "Hello World" =>> filtered =>> append "!!"
+--- > Hll Wrld!!
+extract $ env vowels "Hello World" =>> filtered . local (++ ['A'..'Z'])
+--- > ll rld
+```
+
+---
+
+# Env Example
 
 ```haskell
 type Range = (Int, Int)
@@ -251,6 +280,8 @@ Env (0,10) 10
 ```
 
 ---
+
+# Env Example
 
 ```haskell
 moveBy :: Int -> Env Range Int -> Int
@@ -908,8 +939,14 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 
 ---
 
-# Comonad Fix!
+Notation
+# **BONUS** (reader monad)
+
+```haskell
+(=>=) :: (w a -> b) -> (w b -> c) -> w a -> c
+
+λ> ix 2 =>= takeS 3 $ countStream
+[3,4,5]
+```
 
 ---
-
-
