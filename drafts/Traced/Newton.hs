@@ -18,7 +18,7 @@ fixPointWithinDelta d = extendUntil2 withinDelta
     withinDelta (a, _) (b, _) = abs (a - b) <= d
 
 pairDerivative :: (Double -> Double) -> Traced (Sum Double) (Double, Double)
-pairDerivative f = extend (trace (Sum 1)) $ alongsideW estimateDerivative (traced (f . getSum))
+pairDerivative f = extend (trace (Sum 1)) $ _alongsideW estimateDerivative (traced (f . getSum))
 
 solveNewton :: (Double -> Double) -> Double
 solveNewton f =
