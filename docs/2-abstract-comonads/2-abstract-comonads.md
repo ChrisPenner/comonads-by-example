@@ -335,18 +335,30 @@ data Store s a = Store (s -> a) s
 
 ---
 
-[.code-highlight: 1-2]
-[.code-highlight: 3-4]
-[.code-highlight: all]
+# Store
 
 ```haskell
 instance Comonad (Store s) where
+extract :: Store s a -> a
 extract (Store f s) = f s
+```
+
+---
+# Store
+
+```haskell
+duplicate :: Store s a -> Store s (Store s a)
 duplicate (Store f s) =
     Store (\s' -> Store f s') s
 ```
 
 ---
+# Store
+
+[.code-highlight: 1-3]
+[.code-highlight: 4-6]
+[.code-highlight: 7-8]
+[.code-highlight: all]
 
 ```haskell
 pos :: Store s a -> s
@@ -361,6 +373,42 @@ peeks g (Store f s) = f (g s)
 
 ---
 
+# Store
+
+```haskell
+squared :: Store Int Int
+squared = Store (\x -> x^2) 10
+
+λ> pos squared
+10
+λ> extract squared
+100 -- 10^2
+λ> peek 2 squared
+4 -- 2^2
+λ> peeks (+2) squared
+144 -- (10 + 2)^2
+```
+
+---
+
+# Store
+
+```haskell
+seek :: s -> Store s a -> Store s a
+seek s (Store f _) = Store f s
+
+seeks :: (s -> s) -> Store s a -> Store s a
+seeks g (Store f s) = Store f (g s)
+
+λ> extract $ seek 5 squared
+25 -- 5^2
+λ> extract $ seeks (+5) squared
+225 -- (10 + 5)^2
+```
+
+
+---
+
 # Store Intuition
 
 | **extract:** | Get the value stored at the current key   | 
@@ -372,7 +420,7 @@ peeks g (Store f s) = f (g s)
 
 ---
 
-# Examples: Dictionary
+# Store Example: Dictionary
 
 ```haskell
 populations :: Map String Int
@@ -403,12 +451,19 @@ countryPopulation
 ```haskell
 λ> pos countryPopulation
 "Canada"
+
 λ> peek "Poland" countryPopulation
 Just 38028278
 ```
 
 ---
 
+# Store Example: Dictionary
+
+[.code-highlight: 1]
+[.code-highlight: 1-4]
+[.code-highlight: 1-7]
+[.code-highlight: all]
 ```haskell
 λ> popDefault = fmap (fromMaybe 0) countryPopulation
 
@@ -423,40 +478,14 @@ popDefault :: Store String Int
 ```
 
 ---
+# Store Example: Dictionary
+
+[.code-highlight: 1-3]
+[.code-highlight: all]
 
 ```haskell
-squared :: Store Int Int
-squared = Store (\x -> x^2) 10
-
-λ> pos squared
-10
-λ> extract squared
-100 -- 10^2
-λ> peek 2 squared
-4 -- 2^2
-λ> peeks (+2) squared
-144 -- (10 + 2)^2
-```
-
----
-
-```haskell
-seek :: s -> Store s a -> Store s a
-seek s (Store f _) = Store f s
-
-seeks :: (s -> s) -> Store s a -> Store s a
-seeks g (Store f s) = Store f (g s)
-
-λ> extract $ seek 5 squared
-25 -- 5^2
-λ> extract $ seeks (+5) squared
-225 -- (10 + 5)^2
-```
-
----
-
-```haskell
-experiment :: Functor f => (s -> f s) -> Store s a -> f a
+experiment :: Functor f 
+           => (s -> f s) -> Store s a -> f a
 experiment search (Store f s) = f <$> search s
 
 λ> experiment (const ["Canada", "Poland", "Germany"]) popDefault
@@ -464,6 +493,7 @@ experiment search (Store f s) = f <$> search s
 ```
 
 ---
+# Store Example: Squared
 
 ```haskell
 λ> experiment (\n -> [n - 10, n + 10, n + 20, n + 30]) squared
@@ -478,14 +508,44 @@ experiment search (Store f s) = f <$> search s
 ```
 
 ---
+# Store Example: Squared
+
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
 
 ```haskell
-λ> let withN = extend (experiment (\n -> (show n, n))) squared
-λ> :t withN
+λ> extract squared
+100
+
 withN :: Store Int (String, Int)
+withN = extend (experiment (\n -> (show n, n))) squared
+
+λ> extract withN
+("10",100)
 
 λ> peek 5 withN
 ("5",25)
+```
+
+---
+
+# Store Example: Squared
+
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: all]
+
+```haskell
+shifted :: Store Int (String, Int)
+shifted = extend (peeks (+10)) withN
+
+λ> extract shifted
+("20",400)
+
+λ> peek 5 shifted
+("15",225)
 ```
 ---
 
