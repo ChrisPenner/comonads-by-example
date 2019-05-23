@@ -38,6 +38,7 @@ class Functor w => Comonad w where
 ```
 
 ---
+# Notation (extend)
 
 ```haskell
 λ> extend (ix 2) countStream
@@ -48,10 +49,42 @@ class Functor w => Comonad w where
 ```
 
 ---
+# Notation (extend)
 
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
 ```haskell
+(=>>) :: w a -> (w a -> b) -> w b
+
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> countStream =>> ix 2
+3 :> 4 :> 5 :> 6 :> 7 :> ...
+
 λ> countStream =>> ix 2 =>> takeS 3
 [3,4,5] :> [4,5,6] :> [5,6,7] :> [6,7,8] :> [7,8,9] :> ...
+```
+
+---
+# Notation (extend)
+
+```haskell
+λ> extract $ countStream =>> ix 2 =>> takeS 3
+[3,4,5]
+```
+
+---
+
+# Notation (co-kleisli composition)
+
+```haskell
+(=>=) :: (w a -> b) -> (w b -> c) -> w a -> c
+
+λ> ix 2 =>= takeS 3 $ countStream
+[3,4,5]
 ```
 
 ---
@@ -64,6 +97,8 @@ class Functor w => Comonad w where
 # Identity
 
 ```haskell
+data Identity a = Identity a
+
 instance Comonad Identity where
 extract :: Identity a -> a
 extract   (Identity a) = ???
@@ -121,29 +156,68 @@ data Env e a = Env e a
 
 ```haskell
 instance Comonad (Env e) where
+extract :: Env e a -> a
 extract   (Env _ a) = ???
-duplicate (Env e a) = ???
-extend f  (Env e a) = ???
 ```
 
 ---
 
 ```haskell
 instance Comonad (Env e) where
+extract :: Env e a -> a
 extract   (Env _ a) = a
+```
+
+---
+
+```haskell
+duplicate :: Env e a -> Env e (Env e a)
+duplicate (Env e a) = ???
+```
+
+---
+
+```haskell
+duplicate :: Env e a -> Env e (Env e a)
 duplicate (Env e a) = Env e (Env e a)
+```
+
+---
+
+```haskell
+extend :: (Env e a -> b) 
+       -> Env e a 
+       -> Env e b
+extend f  (Env e a) = ???
+```
+
+---
+
+```haskell
+extend :: (Env e a -> b) 
+       -> Env e a 
+       -> Env e b
 extend f  (Env e a) = Env e (f (Env e a))
 ```
 
 ---
 
+
+[.code-highlight: 1-3]
+[.code-highlight: 4-5]
+[.code-highlight: 7-8]
+[.code-highlight: all]
 ```haskell
 ask :: Env e a -> e
 ask (Env e _) = e
 
 asks :: (e -> e') -> Env e a -> e'
 asks f (Env e _) = f e
+```
 
+---
+
+```haskell
 local :: (e -> e') -> Env e a -> Env e' a
 local f (Env e a) = Env (f e) a
 ```
