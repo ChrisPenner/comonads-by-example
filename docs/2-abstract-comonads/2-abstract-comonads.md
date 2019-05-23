@@ -755,7 +755,7 @@ newtype Traced m a = Traced (m -> a)
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 instance (Monoid m) => Comonad (Traced m) where
@@ -764,7 +764,7 @@ extract (Traced f) = f mempty
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 duplicate :: Traced m a 
@@ -774,7 +774,7 @@ duplicate (Traced f) =
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 extend :: (Traced m a -> b) 
@@ -785,14 +785,91 @@ extend g = fmap g . duplicate
 
 ---
 
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 trace :: m -> Traced m a -> a
 trace m (Traced f) = f m
 
+times10 :: Traced (Sum Int) Int
+times10 = traced (\(Sum n) -> n * 10 )
+
+λ> extract times10
+0
+λ> trace (Sum 5) times10
+50
+λ> extract $ times10 =>> trace (Sum 1) =>> trace (Sum 2)
+30
+```
+
+---
+
+# EQUATIONAL REASONING
+
+```haskell
+> trace "hi" (Traced id)
+
+> id "hi"
+
+> "hi"
+```
+
+---
+
+
+```haskell
+
+> Traced id =>> trace "hi"
+
+> trace "hi" <$> (duplicate $ Traced id) 
+
+> trace "hi" <$> (Traced $ \m -> Traced (id . mappend m)) 
+
+> Traced $ \m -> trace "hi" (Traced (id . mappend m))
+
+> Traced $ \m -> (id . mappend m) "hi" 
+
+> Traced $ \m -> (mappend m "hi")
+```
+
+---
+
+```haskell
+> extract $ Traced id =>> trace "hi" =>> trace "!!"
+
+> extract $ Traced (\m -> (mappend m "hi")) =>> trace "!!"
+
+> trace "!!" (Traced $ \m -> (mappend m "hi"))
+
+> (\m -> (mappend m "hi")) "!!" 
+
+> (mappend "!!" "hi") 
+
+> "!!hi"
+```
+
+---
+
+# Traced Example
+
+```haskell
+exclamation :: Traced String String
+exclamation = traced (\s -> toUpper <$> s <> "!!")
+
+λ> trace "hello" exclamation
+"HELLO!!"
+λ> extract $ exclamation =>> trace "hello"
+"HELLO!!"
+λ> extract $ exclamation =>> trace "jerry" =>> trace " " =>> trace "hello"
+"HELLO JERRY!!"
+```
+
+---
+
+```haskell
 traces :: Monoid m => (a -> m) -> Traced m a -> a
 traces f t = trace (f (extract t)) t
+
 ```
 
 ---
@@ -809,6 +886,8 @@ traces f t = trace (f (extract t)) t
 
 # Example: Function Derivative
 
+![fit](./images/derivative/root-16.png)
+
 ---
 
 $$
@@ -823,6 +902,7 @@ $$
 
 ---
 
+
 ```haskell
 rootSolver :: Double -> Traced (Sum Double) Double
 rootSolver n = Traced f
@@ -830,7 +910,6 @@ rootSolver n = Traced f
     f :: Sum Double -> Double
     f (Sum x) = (x^2) - n
 ```
-
 
 ---
 
