@@ -1005,7 +1005,6 @@ withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
 
 ---
 
-
 # Example: Dependency Tracking
 
 ```haskell
