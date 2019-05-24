@@ -89,6 +89,9 @@ class Functor w => Comonad w where
 
 ---
 
+# [fit] Questions**?**
+
+---
 
 # Comonads 
 ## As Abstract Spaces
@@ -325,6 +328,10 @@ Env (0,15) 8
 
 ---
 
+# [fit] Questions**?**
+
+---
+
 # Store a.k.a. Co-State 
 ## `a.k.a (s, s -> a)`
 
@@ -547,7 +554,13 @@ shifted = extend (peeks (+10)) withN
 λ> peek 5 shifted
 ("15",225)
 ```
+
 ---
+
+# [fit] Questions**?**
+
+---
+
 
 # Conway's Game of Life
 
@@ -744,7 +757,13 @@ computeCellLiveness grid =
     numLivingNeighbours :: Int
     numLivingNeighbours = length . filter id . toList $ neighboursAlive
 ```
+
 ---
+
+# [fit] Questions**?**
+
+---
+
 
 # Traced a.k.a. Co-Writer
 ## `a.k.a. Monoid m => m -> a`
@@ -806,45 +825,59 @@ times10 = traced (\(Sum n) -> n * 10 )
 
 # EQUATIONAL REASONING
 
+[.code-highlight: 1]
+[.code-highlight: 1-3]
+[.code-highlight: all]
 ```haskell
 > trace "hi" (Traced id)
-
+-- definition of 'trace'
 > id "hi"
-
+-- apply id
 > "hi"
 ```
 
 ---
 
 
+[.code-highlight: 1]
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: 1-7]
+[.code-highlight: 1-9]
+[.code-highlight: all]
 ```haskell
-
 > Traced id =>> trace "hi"
-
+-- definition of =>>
 > trace "hi" <$> (duplicate $ Traced id) 
-
+-- definition of duplicate
 > trace "hi" <$> (Traced $ \m -> Traced (id . mappend m)) 
-
+-- apply <$>
 > Traced $ \m -> trace "hi" (Traced (id . mappend m))
-
+-- apply 'trace'
 > Traced $ \m -> (id . mappend m) "hi" 
-
+-- apply 'id'
 > Traced $ \m -> (mappend m "hi")
 ```
 
 ---
 
+[.code-highlight: 1]
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: 1-7]
+[.code-highlight: 1-9]
+[.code-highlight: all]
 ```haskell
 > extract $ Traced id =>> trace "hi" =>> trace "!!"
-
+-- Apply previous substitutions
 > extract $ Traced (\m -> (mappend m "hi")) =>> trace "!!"
-
+-- Cancel 'extract' with =>>
 > trace "!!" (Traced $ \m -> (mappend m "hi"))
-
+-- Apply 'trace'
 > (\m -> (mappend m "hi")) "!!" 
-
+-- Lambda substitution
 > (mappend "!!" "hi") 
-
+-- Apply mappend
 > "!!hi"
 ```
 
@@ -866,11 +899,54 @@ exclamation = traced (\s -> toUpper <$> s <> "!!")
 
 ---
 
+# Listen
+
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: all]
+
+```haskell
+listen :: Traced m a -> Traced m (a, m)
+listen (Traced f) = Traced $ \m -> (f m, m)
+
+t :: Traced [String] String
+t = traced (intercalate " AND A ")
+
+λ> trace ["one", "two"] $ listen t
+("one AND A two",["one","two"])
+λ> extract $ listen t =>> trace ["one"] =>> trace ["two"]
+("two AND A one",["two","one"])
+```
+
+---
+
+# Traces
+
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: 1-10]
+[.code-highlight: 1-13]
+[.code-highlight: all]
+
 ```haskell
 traces :: Monoid m => (a -> m) -> Traced m a -> a
 traces f t = trace (f (extract t)) t
 
+t :: Traced (Sum Int) Ordering
+t = traced (\m -> compare m 10)
+
+homeIn :: Ordering -> Sum Int
+homeIn GT = Sum (-1)
+homeIn LT = Sum 1
+homeIn EQ = Sum 0
+
+λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst)
+(EQ,Sum {getSum = 11})
+
+λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst) =>> traces (homeIn . fst)
+(EQ,Sum {getSum = 10})
 ```
+
 
 ---
 
@@ -883,6 +959,11 @@ traces f t = trace (f (extract t)) t
 | **traces** | Given the value at my location; decide which nearby value to look at |
 
 ---
+
+# [fit] Questions**?**
+
+---
+
 
 # Example: Function Derivative
 
@@ -963,7 +1044,7 @@ estimateDerivativeAtPosition :: Traced (Sum Double) Double
 estimateDerivativeAtPosition w =
     let leftY = trace (Sum (-1)) w
         rightY = trace (Sum 1) w
-        in (rightY - leftY) / 2
+     in (rightY - leftY) / 2
 ```
 
 ---
@@ -1037,11 +1118,16 @@ quiver  -> arrow, bow
 torches -> coal, sticks
 ```
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-6]
+[.code-highlight: all]
 ```haskell
 λ> trace ["string"] recipes
 fromList ["wool"]
+
 λ> trace ["string", "torches"] recipes
 fromList ["coal","sticks","wool"]
+
 λ> extract $ recipes =>> trace ["torches"]
 fromList ["coal","sticks"]
 ```
@@ -1057,13 +1143,17 @@ quiver  -> arrow, bow
 torches -> coal, sticks
 ```
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-6]
+[.code-highlight: all]
+
 ```haskell
-λ> extract $ recipes =>> traces id
-fromList []
 λ> trace ["quiver"] $ recipes
 fromList ["arrows","bow"]
+
 λ> trace ["quiver"] $ recipes =>> traces id
 fromList ["arrows","bow","feathers","sticks","stone","string"]
+
 λ> trace ["quiver"] $ recipes =>> traces id =>> traces id
 fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 ```
@@ -1080,16 +1170,7 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 
 ![inline](./images/dep-analysis/traces-quiver.png)
 
----
 
-Notation
-# **BONUS** (reader monad)
+--- 
 
-```haskell
-(=>=) :: (w a -> b) -> (w b -> c) -> w a -> c
-
-λ> ix 2 =>= takeS 3 $ countStream
-[3,4,5]
-```
-
----
+# [fit] Questions**?**
