@@ -751,10 +751,15 @@ withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
 ---
 
 ```haskell
-λ> trace (Sum 1) withDerivative
-(-15.0,2.0)
+λ> extract withDerivative
+(-16.0,0.0)
+
 λ> trace (Sum 0) withDerivative
 (-16.0,0.0)
+
+λ> trace (Sum 1) withDerivative
+(-15.0,2.0)
+
 λ> trace (Sum 4) withDerivative
 (0.0,8.0)
 ```

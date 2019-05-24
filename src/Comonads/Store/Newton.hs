@@ -7,6 +7,7 @@ import Control.Arrow
 import Comonads.Transformers.Iter
 import Data.Function
 import Control.Comonad.Env
+import Debug.Trace
 
 -- https://en.wikipedia.org/wiki/Newton%27s_method#Square_root_of_a_number
 
@@ -20,7 +21,7 @@ f' x = 2 * x
 
 -- Store which extracts (f x, f' x)
 lineFuncStore :: Store Double (Double, Double)
-lineFuncStore = store (f &&& f') 10
+lineFuncStore = store (f &&& f') 11
 
 -- Take one step towards the solution to the equation
 newtonStep :: ComonadStore Double w => w (Double, Double) -> w (Double, Double)
@@ -38,3 +39,16 @@ solveNewton = fixPointWithinDelta 0.0000001 newtonStep
 
 solveNewtonCount :: EnvT Int (Store Double) (Double, Double) -> EnvT Int (Store Double) (Double, Double)
 solveNewtonCount = fixPointWithinDelta 0.0000001 (local (+1) . newtonStep)
+
+
+newtonFix :: Double -> Store Double (Double, Double) -> Double
+newtonFix delta w = wfix (extend go w)
+  where
+    go :: Store Double (Double, Double) -> Store Double Double -> Double
+    go s solved = s & do
+        (fx, dx) <- extract
+        (nextY, _) <- peeks (subtract (fx / dx))
+        if abs (nextY - fx) <= abs delta
+            then pos
+            else return $ peeks (subtract $ fx / dx) solved
+
