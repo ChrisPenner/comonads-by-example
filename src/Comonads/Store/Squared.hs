@@ -1,9 +1,16 @@
 module Comonads.Store.Squared where
 
 import Comonads.Store
+import Control.Comonad
 
 squared :: Store Int Int
 squared = Store (\x -> x^(2 :: Int)) 10
+
+withN :: Store Int (String, Int)
+withN = extend (experiment (\n -> (show n, n))) squared
+
+shifted :: Store Int (String, Int)
+shifted = extend (peeks (+10)) withN
 
 -- > λ> pos squared
 -- > 10

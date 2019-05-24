@@ -60,3 +60,17 @@ avg xs =
 
 countStream :: Stream Int
 countStream = fromList [1..]
+
+negStream :: Stream Int
+negStream = fromList [2, -3, -5, 6, 3, -10, 3]
+
+-- subNegative:: Stream Int -> Stream Int
+-- λ> randomStream
+-- 2 :> -3 :> -5 :> 6 :> 3 :> -10 :> 3 :> 2 :> -3 :> -5 :> ...
+-- λ> subNegative randomStream
+-- 2 :> 6 :> 6 :> 6 :> 3 :> 3 :> 3 :> 2 :> 6 :> 6 :> ...
+subNegative :: Stream Int -> Stream Int
+subNegative = extend upcast
+  where
+    upcast :: Stream Int -> Int
+    upcast s = head . dropWhile (<0) $ toList s

@@ -2,7 +2,6 @@ module Comonads.Traced.DepAnalysis where
 
 import qualified Data.Set                   as S
 import           Comonads.Traced
-import           Control.Comonad
 
 
 ingredientsOf :: String -> S.Set String

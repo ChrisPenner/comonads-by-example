@@ -38,6 +38,7 @@ class Functor w => Comonad w where
 ```
 
 ---
+# Notation (extend)
 
 ```haskell
 λ> extend (ix 2) countStream
@@ -48,13 +49,46 @@ class Functor w => Comonad w where
 ```
 
 ---
+# Notation (extend)
 
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
 ```haskell
+(=>>) :: w a -> (w a -> b) -> w b
+
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> countStream =>> ix 2
+3 :> 4 :> 5 :> 6 :> 7 :> ...
+
 λ> countStream =>> ix 2 =>> takeS 3
 [3,4,5] :> [4,5,6] :> [5,6,7] :> [6,7,8] :> [7,8,9] :> ...
 ```
 
 ---
+# Notation (extend)
+
+```haskell
+λ> extract $ countStream =>> ix 2 =>> takeS 3
+[3,4,5]
+```
+
+---
+
+# Notation (co-kleisli composition)
+
+```haskell
+(=>=) :: (w a -> b) -> (w b -> c) -> w a -> c
+
+λ> ix 2 =>= takeS 3 $ countStream
+[3,4,5]
+```
+
+---
+
 
 # Comonads 
 ## As Abstract Spaces
@@ -64,6 +98,8 @@ class Functor w => Comonad w where
 # Identity
 
 ```haskell
+data Identity a = Identity a
+
 instance Comonad Identity where
 extract :: Identity a -> a
 extract   (Identity a) = ???
@@ -118,32 +154,78 @@ data Env e a = Env e a
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
 instance Comonad (Env e) where
+extract :: Env e a -> a
 extract   (Env _ a) = ???
+```
+
+---
+# Env a.k.a. Co-Reader 
+
+```haskell
+instance Comonad (Env e) where
+extract :: Env e a -> a
+extract   (Env _ a) = a
+```
+
+---
+# Env a.k.a. Co-Reader 
+
+```haskell
+duplicate :: Env e a -> Env e (Env e a)
 duplicate (Env e a) = ???
+```
+
+---
+# Env a.k.a. Co-Reader 
+
+```haskell
+duplicate :: Env e a -> Env e (Env e a)
+duplicate (Env e a) = Env e (Env e a)
+```
+
+---
+# Env a.k.a. Co-Reader 
+
+```haskell
+extend :: (Env e a -> b) 
+       -> Env e a 
+       -> Env e b
 extend f  (Env e a) = ???
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
 ```haskell
-instance Comonad (Env e) where
-extract   (Env _ a) = a
-duplicate (Env e a) = Env e (Env e a)
+extend :: (Env e a -> b) 
+       -> Env e a 
+       -> Env e b
 extend f  (Env e a) = Env e (f (Env e a))
 ```
 
 ---
+# Env a.k.a. Co-Reader 
 
+
+[.code-highlight: 1-3]
+[.code-highlight: 4-5]
+[.code-highlight: all]
 ```haskell
 ask :: Env e a -> e
 ask (Env e _) = e
 
 asks :: (e -> e') -> Env e a -> e'
 asks f (Env e _) = f e
+```
 
+---
+# Env a.k.a. Co-Reader 
+
+```haskell
 local :: (e -> e') -> Env e a -> Env e' a
 local f (Env e a) = Env (f e) a
 ```
@@ -160,7 +242,28 @@ local f (Env e a) = Env (f e) a
 
 ---
 
-# Example
+# Env Example
+
+```haskell
+vowels :: String
+vowels = "aAeEiIoOuU"
+
+filtered :: Env String String -> String
+filtered w = let invalid = ask w
+              in filter (not . (`elem` invalid)) $ extract w
+
+append :: String -> Env e String -> String              
+append s w = extract w ++ s
+
+extract $ env vowels "Hello World" =>> filtered =>> append "!!"
+--- > Hll Wrld!!
+extract $ env vowels "Hello World" =>> filtered . local (++ ['A'..'Z'])
+--- > ll rld
+```
+
+---
+
+# Env Example
 
 ```haskell
 type Range = (Int, Int)
@@ -177,6 +280,8 @@ Env (0,10) 10
 ```
 
 ---
+
+# Env Example
 
 ```haskell
 moveBy :: Int -> Env Range Int -> Int
@@ -230,18 +335,30 @@ data Store s a = Store (s -> a) s
 
 ---
 
-[.code-highlight: 1-2]
-[.code-highlight: 3-4]
-[.code-highlight: all]
+# Store
 
 ```haskell
 instance Comonad (Store s) where
+extract :: Store s a -> a
 extract (Store f s) = f s
+```
+
+---
+# Store
+
+```haskell
+duplicate :: Store s a -> Store s (Store s a)
 duplicate (Store f s) =
     Store (\s' -> Store f s') s
 ```
 
 ---
+# Store
+
+[.code-highlight: 1-3]
+[.code-highlight: 4-6]
+[.code-highlight: 7-8]
+[.code-highlight: all]
 
 ```haskell
 pos :: Store s a -> s
@@ -256,6 +373,42 @@ peeks g (Store f s) = f (g s)
 
 ---
 
+# Store
+
+```haskell
+squared :: Store Int Int
+squared = Store (\x -> x^2) 10
+
+λ> pos squared
+10
+λ> extract squared
+100 -- 10^2
+λ> peek 2 squared
+4 -- 2^2
+λ> peeks (+2) squared
+144 -- (10 + 2)^2
+```
+
+---
+
+# Store
+
+```haskell
+seek :: s -> Store s a -> Store s a
+seek s (Store f _) = Store f s
+
+seeks :: (s -> s) -> Store s a -> Store s a
+seeks g (Store f s) = Store f (g s)
+
+λ> extract $ seek 5 squared
+25 -- 5^2
+λ> extract $ seeks (+5) squared
+225 -- (10 + 5)^2
+```
+
+
+---
+
 # Store Intuition
 
 | **extract:** | Get the value stored at the current key   | 
@@ -267,7 +420,7 @@ peeks g (Store f s) = f (g s)
 
 ---
 
-# Examples: Dictionary
+# Store Example: Dictionary
 
 ```haskell
 populations :: Map String Int
@@ -298,12 +451,19 @@ countryPopulation
 ```haskell
 λ> pos countryPopulation
 "Canada"
+
 λ> peek "Poland" countryPopulation
 Just 38028278
 ```
 
 ---
 
+# Store Example: Dictionary
+
+[.code-highlight: 1]
+[.code-highlight: 1-4]
+[.code-highlight: 1-7]
+[.code-highlight: all]
 ```haskell
 λ> popDefault = fmap (fromMaybe 0) countryPopulation
 
@@ -318,40 +478,14 @@ popDefault :: Store String Int
 ```
 
 ---
+# Store Example: Dictionary
+
+[.code-highlight: 1-3]
+[.code-highlight: all]
 
 ```haskell
-squared :: Store Int Int
-squared = Store (\x -> x^2) 10
-
-λ> pos squared
-10
-λ> extract squared
-100 -- 10^2
-λ> peek 2 squared
-4 -- 2^2
-λ> peeks (+2) squared
-144 -- (10 + 2)^2
-```
-
----
-
-```haskell
-seek :: s -> Store s a -> Store s a
-seek s (Store f _) = Store f s
-
-seeks :: (s -> s) -> Store s a -> Store s a
-seeks g (Store f s) = Store f (g s)
-
-λ> extract $ seek 5 squared
-25 -- 5^2
-λ> extract $ seeks (+5) squared
-225 -- (10 + 5)^2
-```
-
----
-
-```haskell
-experiment :: Functor f => (s -> f s) -> Store s a -> f a
+experiment :: Functor f 
+           => (s -> f s) -> Store s a -> f a
 experiment search (Store f s) = f <$> search s
 
 λ> experiment (const ["Canada", "Poland", "Germany"]) popDefault
@@ -359,6 +493,7 @@ experiment search (Store f s) = f <$> search s
 ```
 
 ---
+# Store Example: Squared
 
 ```haskell
 λ> experiment (\n -> [n - 10, n + 10, n + 20, n + 30]) squared
@@ -373,14 +508,44 @@ experiment search (Store f s) = f <$> search s
 ```
 
 ---
+# Store Example: Squared
+
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
 
 ```haskell
-λ> let withN = extend (experiment (\n -> (show n, n))) squared
-λ> :t withN
+λ> extract squared
+100
+
 withN :: Store Int (String, Int)
+withN = extend (experiment (\n -> (show n, n))) squared
+
+λ> extract withN
+("10",100)
 
 λ> peek 5 withN
 ("5",25)
+```
+
+---
+
+# Store Example: Squared
+
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: all]
+
+```haskell
+shifted :: Store Int (String, Int)
+shifted = extend (peeks (+10)) withN
+
+λ> extract shifted
+("20",400)
+
+λ> peek 5 shifted
+("15",225)
 ```
 ---
 
@@ -590,7 +755,7 @@ newtype Traced m a = Traced (m -> a)
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 instance (Monoid m) => Comonad (Traced m) where
@@ -599,7 +764,7 @@ extract (Traced f) = f mempty
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 duplicate :: Traced m a 
@@ -609,7 +774,7 @@ duplicate (Traced f) =
 ```
 
 ---
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 extend :: (Traced m a -> b) 
@@ -620,14 +785,91 @@ extend g = fmap g . duplicate
 
 ---
 
-# Traced a.k.a. Co-Writer
+# Traced
 
 ```haskell
 trace :: m -> Traced m a -> a
 trace m (Traced f) = f m
 
+times10 :: Traced (Sum Int) Int
+times10 = traced (\(Sum n) -> n * 10 )
+
+λ> extract times10
+0
+λ> trace (Sum 5) times10
+50
+λ> extract $ times10 =>> trace (Sum 1) =>> trace (Sum 2)
+30
+```
+
+---
+
+# EQUATIONAL REASONING
+
+```haskell
+> trace "hi" (Traced id)
+
+> id "hi"
+
+> "hi"
+```
+
+---
+
+
+```haskell
+
+> Traced id =>> trace "hi"
+
+> trace "hi" <$> (duplicate $ Traced id) 
+
+> trace "hi" <$> (Traced $ \m -> Traced (id . mappend m)) 
+
+> Traced $ \m -> trace "hi" (Traced (id . mappend m))
+
+> Traced $ \m -> (id . mappend m) "hi" 
+
+> Traced $ \m -> (mappend m "hi")
+```
+
+---
+
+```haskell
+> extract $ Traced id =>> trace "hi" =>> trace "!!"
+
+> extract $ Traced (\m -> (mappend m "hi")) =>> trace "!!"
+
+> trace "!!" (Traced $ \m -> (mappend m "hi"))
+
+> (\m -> (mappend m "hi")) "!!" 
+
+> (mappend "!!" "hi") 
+
+> "!!hi"
+```
+
+---
+
+# Traced Example
+
+```haskell
+exclamation :: Traced String String
+exclamation = traced (\s -> toUpper <$> s <> "!!")
+
+λ> trace "hello" exclamation
+"HELLO!!"
+λ> extract $ exclamation =>> trace "hello"
+"HELLO!!"
+λ> extract $ exclamation =>> trace "jerry" =>> trace " " =>> trace "hello"
+"HELLO JERRY!!"
+```
+
+---
+
+```haskell
 traces :: Monoid m => (a -> m) -> Traced m a -> a
 traces f t = trace (f (extract t)) t
+
 ```
 
 ---
@@ -644,6 +886,8 @@ traces f t = trace (f (extract t)) t
 
 # Example: Function Derivative
 
+![fit](./images/derivative/root-16.png)
+
 ---
 
 $$
@@ -658,6 +902,7 @@ $$
 
 ---
 
+
 ```haskell
 rootSolver :: Double -> Traced (Sum Double) Double
 rootSolver n = Traced f
@@ -665,7 +910,6 @@ rootSolver n = Traced f
     f :: Sum Double -> Double
     f (Sum x) = (x^2) - n
 ```
-
 
 ---
 
@@ -766,7 +1010,6 @@ withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
 
 ---
 
-
 # Example: Dependency Tracking
 
 ```haskell
@@ -839,8 +1082,14 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 
 ---
 
-# Comonad Fix!
+Notation
+# **BONUS** (reader monad)
+
+```haskell
+(=>=) :: (w a -> b) -> (w b -> c) -> w a -> c
+
+λ> ix 2 =>= takeS 3 $ countStream
+[3,4,5]
+```
 
 ---
-
-

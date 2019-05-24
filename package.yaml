@@ -23,17 +23,17 @@ dependencies:
 - comonad
 - containers
 - pretty-simple
-- brick
-- vty
-- kan-extensions
-- text
 - free
-- mtl
-- adjunctions
-- distributive
-- grids
-- lens
 - directory
-- recursion-schemes
+# - brick
+# - vty
+# - kan-extensions
+# - text
+# - mtl
+# - adjunctions
+# - distributive
+# - grids
+# - lens
+# - recursion-schemes
 library:
   source-dirs: src

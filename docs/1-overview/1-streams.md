@@ -627,3 +627,24 @@ dropS n s = extend (ix n) s
 ---
 
 ![fit](./images/questions/simpsons-questions.gif)
+
+---
+
+# Challenge
+
+Tricksy
+
+```haskell
+subNegative:: Stream Int -> Stream Int
+λ> negStream
+2 :> -3 :> -5 :> 6 :> 3 :> -10 :> 3 :> 2 :> ...
+λ> subNegative negStream
+2 :>  6 :>  6 :> 6 :> 3 :>   3 :> 3 :> 2 :> ...
+```
+
+Tough
+
+```
+Implement a bidirectional infinite stream which is also a comonad!
+Use any representation you like.
+```

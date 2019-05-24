@@ -219,6 +219,12 @@ solution z = sum (extend waterAtPosition z)
 
 ---
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-5]
+[.code-highlight: 6-10]
+[.code-highlight: 11-13]
+[.code-highlight: 15-16]
+[.code-highlight: all]
 ```haskell
 λ> problem = fromList [2, 0, 4, 2, 3, 2, 1, 2]
 Zipper {left = [], focus = 2, right = [0,4,2,3,2,1,2]}
