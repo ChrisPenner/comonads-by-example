@@ -12,7 +12,6 @@ theme: Ostrich, 3
 
 #[fit] Comonads for _Kinda_ Free
 
-
 ---
 
 #[fit] What's a __co__*free* comonad?
@@ -52,12 +51,14 @@ type Stream a = Cofree Identity a
 ---
 
 ```haskell
-[0, 1, 2, 3, ...]
+0, 1, 2, 3, ...
 =~
 0 :< Identity (1 :< Identity (2 :< Identity (3 :< ...)))
 ```
 
 ---
+
+# Constructing Cofree Trees
 
 ```haskell
 count :: Cofree Identity Int
@@ -65,6 +66,7 @@ count = 0 :< Identity (fmap (+1) count)
 ```
 
 ---
+# Constructing Cofree Trees
 
 ```haskell
 coiter :: Functor f 
@@ -77,13 +79,15 @@ coiter :: Functor f
 
 ```haskell
 count' :: Cofree Identity Int
-count' = coiter next 0
+count' = coiter coalg 0
   where
-    next :: Int -> Identity Int
-    next n = Identity (n + 1)
+    coalg :: Int -> Identity Int
+    coalg n = Identity (n + 1)
 ```
 
 ---
+
+# Constructing Cofree Trees
 
 ```haskell
 unfold :: Functor f 
@@ -104,12 +108,14 @@ type ??? a = Cofree Maybe a
 ```
 
 ---
+# NonEmpty Lists
 
 ```haskell
 type NonEmpty a = Cofree Maybe a
 ```
 
 ---
+# NonEmpty Lists
 
 ```haskell
 type NonEmpty a = Cofree Maybe a
@@ -120,6 +126,9 @@ alphabet = coiter maybeNext 'a'
     maybeNext :: Char -> Maybe Char
     maybeNext 'z' = Nothing
     maybeNext a   = Just $ succ a
+
+λ> alphabet
+'a' :< Just ('b' :< Just ('c' :< Just ... :< Just ('z' :< Nothing)))...
 ```
 
 ---
@@ -128,12 +137,14 @@ alphabet = coiter maybeNext 'a'
 type Tree a = Cofree ??? a
 ```
 ---
+# Rose Trees
 
 ```haskell
 type Tree a = Cofree [] a
 ```
 
 ---
+# Rose Trees
 
 ```haskell
 simpleTree :: Cofree [] Char
@@ -146,6 +157,8 @@ simpleTree = 'a' :< [ 'b' :< ['c' :< []]
 
 
 ---
+
+# (Monadic) Rose Trees
 
 ```haskell
 type Tree a = Cofree [] a
@@ -160,7 +173,8 @@ fileTree = unfoldM crawl "."
 ---
 
 ```haskell
-λ> fileTree
+λ> result <- fileTree
+λ> pPrint result
 "." :<
     [ "stack.yaml" :< []
     , "LICENSE" :< []
@@ -190,47 +204,57 @@ type ??? e a = Cofree (Const e) a
 
 ---
 
+# Env Comonad (e.g. Tuple)
+
 ```haskell
 type Env e a = Cofree (Const e) a
 ```
 
 ---
+# Store Comonad
 
 ```haskell
 type Store s a = Cofree ??? a
 ```
 
 ---
+# Store Comonad
 
 ```haskell
 type Store s a = Cofree (Compose ??? ???) a
 ```
 
 ---
+# Store Comonad
 
 ```haskell
 type Store s a = Cofree (Compose ??? ((->) s)) a
 ```
 
 ---
+# Store Comonad
 
 ```haskell
 type Store s a = Cofree (Compose ((,) s) ((->) s)) a
 ```
 
 ---
+# ??? Comonad
 
 ```haskell
 type ??? m a = Cofree ((->) m) a
 ```
 
 ---
+# Traced Comonad
 
 ```haskell
 type Traced m a = Cofree ((->) m) a -- When `m` is a Monoid
 ```
 
 ---
+
+# Natural Transformations
 
 ```haskell
 hoistCofree :: Functor f 
@@ -322,7 +346,6 @@ zipper = unfold move ([-1, -2], 0, [1, 2])
 ```
 
 ---
-
 
 Composing Objects using Day Convolution
 

@@ -1,5 +1,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module Comonads.Dynamic.Cofree where
 
 import Data.Semigroup
@@ -27,6 +30,7 @@ dynWFix f w = wfix (fmap (curry f) w)
 
 dynWFix' :: Comonad w => ((a, w b) -> b) -> w a -> w b
 dynWFix' f w = extend wfix (fmap (curry f) w)
+
 
 -- hrmm :: forall w a b. ComonadApply w => (w (a, b) -> b) -> w a -> b
 -- hrmm f w = wfix (extend pair w)
@@ -70,9 +74,25 @@ sums = dynFix' go
     go (n, (_ NE.:| [])) = trace ("adding: " ++ show n ++ "\n") $ n
     go (n, _ NE.:| (x:_)) = trace ("adding: " ++ show n ++ "\n") $ n + x
 
+-- sumsShare :: NE.NonEmpty Int -> NE.NonEmpty Int
+-- sumsShare = dynWFix' go
+--   where
+--     go :: (Int, NE.NonEmpty Int) -> Int
+--     go (n, (_ NE.:| [])) = trace ("adding: " ++ show n ++ "\n") $ n
+--     go (n, _ NE.:| (x:_)) = trace ("adding: " ++ show n ++ "\n") $ n + x
+
+newtype ZipNE a = ZipNE { runZipNE :: NE.NonEmpty a }
+    deriving newtype (Functor, Comonad)
+    deriving stock (Show)
+    deriving anyclass ComonadApply
+
+instance Applicative ZipNE where
+  pure a = ZipNE $ NE.cycle (pure a)
+  ZipNE f <*> ZipNE g = ZipNE $ NE.zipWith ($) f g
+
 sumsShare :: NE.NonEmpty Int -> NE.NonEmpty Int
-sumsShare = dynWFix' go
+sumsShare w = runZipNE $ kfix (go <$> ZipNE w)
   where
-    go :: (Int, NE.NonEmpty Int) -> Int
-    go (n, (_ NE.:| [])) = trace ("adding: " ++ show n ++ "\n") $ n
-    go (n, _ NE.:| (x:_)) = trace ("adding: " ++ show n ++ "\n") $ n + x
+    go :: Int -> ZipNE Int -> Int
+    go n ~(ZipNE (_ NE.:| xs)) = if null xs then n
+                                            else n + head xs

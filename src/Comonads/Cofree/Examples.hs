@@ -22,10 +22,10 @@ count :: Stream Int
 count = 0 :< Identity (fmap (+1) count)
 
 count' :: Cofree Identity Int
-count' = coiter next 0
+count' = coiter coalg 0
   where
-    next :: Int -> Identity Int
-    next n = Identity (n + 1)
+    coalg :: Int -> Identity Int
+    coalg n = Identity (n + 1)
 
 ---
 
