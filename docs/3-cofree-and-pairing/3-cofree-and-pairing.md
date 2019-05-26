@@ -347,6 +347,38 @@ zipper = unfold move ([-1, -2], 0, [1, 2])
 
 ---
 
+# Cofree/Free Pairing
+
+---
+
+Cofree and Free form an **Adjunction**
+
+---
+
+```haskell
+class Adjunction f u where
+    unit :: a -> u (f a)
+
+    counit :: f (u a) -> a
+```
+
+---
+
+```haskell
+class Adjunction (Free f) (Cofree u) where
+    unit :: a -> Cofree u (Free f a)
+
+    counit :: Free f (Cofree u a) -> a
+```
+
+---
+
+```haskell
+
+```
+
+---
+
 Composing Objects using Day Convolution
 
 https://blog.functorial.com/posts/2016-08-08-Comonad-And-Day-Convolution.html
