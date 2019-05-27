@@ -4,8 +4,11 @@
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 module Comonads.Cofree.Adjunction where
 
+import Control.Comonad
 import Data.Functor.Adjunction
 import Control.Monad.Free
 import Control.Comonad.Cofree
@@ -133,3 +136,19 @@ transactions = do
 
 -- runTransactions :: Double -> Free Events () -> Double
 -- runTransactions balance = indexAdjunction (accountCo balance)
+
+----
+
+instance (Adjunction f u, Applicative f) => Applicative (Adj u f) where
+  pure = Adj . unit
+  Adj a <*> Adj b = Adj $ mzipWithRep (<*>) a b
+    -- where
+        -- Not lawful, but close :|
+        -- go a' b' = extractL a' <$> b'
+
+newtype Adj f u a = Adj {runAdj :: f (u a)}
+  deriving (Show, Functor)
+
+instance (Adjunction f u) => Comonad (Adj f u) where
+  extract = counit . runAdj
+  duplicate (Adj fua) = Adj ((fmap Adj) . unit <$> fua)
