@@ -20,6 +20,7 @@ theme: Ostrich, 3
 
 ![fit right](./images/grids/duplicate-grid-selected.png)
 
+
 ---
 
 ```haskell
