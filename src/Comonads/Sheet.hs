@@ -9,39 +9,6 @@ import Comonads.Store
 import Data.Stream.Infinite
 import Debug.Trace
 
--- data Sheet a =
---     Sheet
---     { prices       :: Stream a
---     , quants       :: Stream a
---     , costs        :: Stream a
---     , tax          :: a
---     , total        :: a
---     , totalWithTax :: a
---     } deriving Functor
-
--- instance Distributive Sheet where
---   distribute = distributeRep
-
--- instance Representable Sheet where
---   type Rep Sheet = CellRef
---   index s (Price r) = index (prices s) r
---   index s (Quant r) = index (quants s) r
---   index s (Cost r) = index (costs s) r
---   index s Total =  total s
---   index s Tax =  tax s
---   index s TotalWithTax = totalWithTax s
---   tabulate f =
---     Sheet
---     { prices       = tabulate (f. Price)
---     , quants       =  tabulate (f. Quant)
---     , costs        = tabulate (f. Cost)
---     , tax          =  f Tax
---     , total        = f Total
---     , totalWithTax = f TotalWithTax
---     }
-
-
-
 data CellRef
     = Price Int
     | Quant Int
@@ -78,8 +45,8 @@ dataDef (Cost r) = do
     return $ price * quant
 
 dataDef Tax = pure 0.15
-dataDef Total = trace "calculating total" . sum . getCells (Cost <$> [0 .. 2])
-dataDef TotalWithTax = trace "calculating totalwithtax" $ do
+dataDef Total = sum . getCells (Cost <$> [0 .. 2])
+dataDef TotalWithTax = do
     tax' <- peek Tax
     total' <- peek Total
     pure $ (tax' * total') + total'

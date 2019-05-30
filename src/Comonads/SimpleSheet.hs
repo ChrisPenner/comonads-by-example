@@ -26,28 +26,30 @@ getCells = experiment . const
 -- 5 | 0.15 |  28.75 | 33.06
 
 dataDef :: (Char, Int) -> Double
-dataDef ('A', 0) = 1
-dataDef ('A', 1) = 0.75
-dataDef ('A', 2) = 2
+dataDef ('B', 2) = 1
+dataDef ('B', 3) = 0.75
+dataDef ('B', 4) = 2
 
-dataDef ('B', 0) = 7
-dataDef ('B', 1) = 5
-dataDef ('B', 2) = 9
+dataDef ('C', 2) = 7
+dataDef ('C', 3) = 5
+dataDef ('C', 4) = 9
 dataDef _ = 0
 
 sheet :: Store (Char, Int) Double
-sheet = (store (dataDef . first toUpper ) ('A', 0))
+sheet = (store (dataDef . first toUpper ) ('A', 1))
 
 printSheet' :: (Show a) => Store (Char, Int) a ->  IO ()
-printSheet' w = printSheet w ('C', 5)
+printSheet' w = printSheet w ('D', 5)
 
 printSheet :: (Show a) => Store (Char, Int) a -> (Char, Int) -> IO ()
 printSheet w (endCol, endRow) = putStrLn . unlines $ do
     rowI <- [0 .. endRow]
-    return . intercalate " | "
-      $ do colI <- ['A'.. toUpper endCol]
-           let item = peek (colI, rowI) w
-           return $ padded item
+    return . (padded rowI <>) . intercalate " | " $
+      if rowI == 0
+        then fmap padded $ ['A'..toUpper endCol]
+        else do colI <- ['A'.. toUpper endCol]
+                let item = peek (colI, rowI) w
+                return $ padded item
   where
     padded s = show s <> replicate (5 - length (show s)) ' '
 
