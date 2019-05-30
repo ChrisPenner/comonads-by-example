@@ -18,17 +18,26 @@ slidenumbers: true
 
 # Outline
 
-- Slides
-- Examples
-- Implementations
-- Live Coding
-- DIY
+```
+1. Session 1
+    1. Overview of Comonads
+    2. Streams
+    3. *BREAK*
+
+1. Session 2
+    1. Store
+```
 
 ---
 
 # Get the SRC
+### github.com/ChrisPenner/comonads-by-example
 
-TODO: LINKY
+```
+git clone git@github.com:ChrisPenner/comonads-by-example
+cd comonads-by-example
+stack build
+```
 
 ---
 
@@ -42,7 +51,374 @@ TODO: LINKY
 
 ---
 
-# [fit]DUALS
+#[fit] **Monads**
+
+## [fit] Introduce Effects
+
+---
+
+#[fit] `putStrLn :: String -> IO ( )`
+
+---
+
+#[fit] `readFile :: FilePath -> IO String`
+
+---
+
+#[fit] `words :: String -> [String]`
+
+---
+
+### Effect Construction
+
+#[fit] `find :: (a -> Bool) -> [a] -> Maybe String`
+
+---
+
+#[fit]  **Effects**
+##[fit] _Add a_ Context
+##[fit] _To an_ Element
+
+#[fit] `a -> m b`
+
+---
+
+###[fit] What about **Co**Effects?
+
+---
+
+#[fit] *Duals*
+####[fit] **flip** all the things
+
+---
+
+# **Co**Effects
+
+
+#[fit] `a -> m b`
+#[fit] __`b <- w a`__
+
+---
+
+# **Co**Effects
+
+#[fit] `a -> m b`
+#[fit] __`w a -> b`__
+
+---
+
+# [fit] **Co**Effects
+## [fit] are **Queries**
+## [fit] over a **Structure**
+
+---
+
+# [fit] `length :: [a] -> Int`
+
+---
+
+# [fit] `head :: [a] -> a`
+
+---
+
+### Query Construction
+# [fit] `elem :: a -> ([a] -> Bool)`
+
+---
+
+# [fit] `fst :: (a, b) -> a`
+# ` `
+# [fit] `snd :: (a, b) -> b`
+
+---
+
+# [fit] `sum :: Tree Int -> Int`
+
+---
+
+# [fit] **Monads** _let us_
+# [fit] compose **effects**
+
+---
+
+#[fit] _Confusing?_
+
+##[fit] _let's add some_ **context**
+
+---
+
+#[fit] Monads
+###[fit] are a **context**
+###[fit] where we can introduce **effects**
+
+---
+
+#[fit] **Co**monads
+###[fit] are a **context**
+###[fit] where we can extract run **queries**
+
+---
+
+#[fit] Let's look at a specific **context**
+#[fit] `  `
+#[fit] `  `
+#[fit] `data Stream a = a :> Stream a`
+
+
+---
+
+`:>` is an **infix** data constructor
+
+```haskell
+data Stream a = a :> Stream a
+       deriving (Functor, Foldable)
+```
+
+---
+
+```haskell
+fromList :: [a] -> Stream a
+fromList xs = go (cycle xs)
+  where
+    go (a:rest) = a :> go rest
+
+countStream :: Stream Int
+countStream = fromList [0..]
+λ> 0 :> 1 :> 2 :> 3 :> 4 :> ...
+```
+
+---
+
+# Let's write some 
+##[fit] **Q**u**e**r**i**e**s**
+
+a.k.a. **Co**Effects
+
+---
+
+#[fit]`ix :: Int -> Stream a -> a`
+
+---
+
+```haskell
+ix :: Int -> Stream a -> a
+ix n _ | n < 0 = error "whoops"
+ix 0 (a :> _) = a
+ix n (_ :> rest) = ix (n - 1) rest
+```
+
+---
+
+```haskell
+λ> ix 0 countStream
+0
+
+λ> ix 2 countStream
+2
+
+λ> ix 1337 countStream
+1337
+```
+
+---
+
+![fit](./images/questions/ask-me-anything.gif)
+
+---
+
+# [fit] **So What??**
+
+---
+
+#[fit] Now we want to write **drop**!
+
+##[fit] `dropS :: Int -> Stream a -> Stream a`
+
+---
+
+## Desired Behaviour
+
+```haskell
+λ> countStream
+0 :> 1 :> 2 :> 3 :> 4 :> ...
+
+λ> dropS 1 countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> dropS 2 countStream
+2 :> 3 :> 4 :> 5 :> 6 :> ...
+```
+
+---
+
+#[fit] `Stream a -> Stream b`
+### is a 
+# **Mutation**
+
+---
+
+# Other **Mutations**
+
+---
+
+#[fit] `gaussianBlur :: Image Pixel -> Image Pixel`
+
+---
+
+```haskell
+scanl :: (b -> a -> b) 
+      -> b 
+      -> [a] -> [b]
+```
+
+---
+
+#[fit] `popHeap_ :: Heap Int -> Heap Int`
+
+---
+
+![inline fit](./images/spreadsheets/example-spreadsheet.png)
+
+#[fit] `deleteColumn :: SpreadSheet a -> SpreadSheet a`
+
+
+---
+
+![inline fit](./images/derivative/derivative.png)
+
+# [fit]`derivative :: (Double -> Double) -> (Double -> Double)`
+
+
+---
+
+#[fit] `gaussianBlur :: Image Pixel -> Image Pixel`
+
+---
+
+# Also
+
+* Solve Hill Climbing Problems
+* Compute Roots using Newton's Method
+* Compute dependency trees
+* Graph Traversals
+* Crush the Coding Interview (Rainwater Problem)
+
+---
+
+#[fit] **Where** were we?
+
+---
+
+```haskell
+have:
+λ> ix 2 countStream
+2
+
+want:
+λ> dropS 2 countStream
+2 :> 3 :> 4 :> 5 :> 6 :> ...
+```
+
+---
+
+## **Similar??**
+
+```haskell
+have:
+ix    :: Int -> Stream a ->        a
+
+want:
+dropS :: Int -> Stream a -> Stream a
+```
+
+---
+
+
+### Can we turn 
+#[fit]**query** 
+### into a 
+#[fit]**mutation**?
+
+---
+
+# [fit] Back 
+### _to the_
+#[fit] **Monad**
+
+---
+
+#[fit]  **join**
+
+---
+
+# [fit] `join :: m (m a) -> m a`
+
+# [fit] **`cojoin?? :: w a -> w (w a)`**
+
+---
+
+# **WTH**
+## _is_
+#[fit] **Co**Join?
+
+---
+
+# [fit] `duplicate :: w a -> w (w a)`
+
+---
+
+# WUT?
+
+---
+
+# _Duplicate_
+#[fit] **Nests** your **Structure**
+### while maintaining
+#[fit] **Context**
+
+---
+
+# [fit] The **Context** of a **Stream** 
+## is its
+# [fit] __*position*__
+
+---
+
+
+```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
+λ> duplicate countStream
+(1 :> 2 :> ...) 
+  :> (2 :> 3 :> ...) 
+  :> (3 :> 4 :>...) 
+  :> ...
+
+```
+
+---
+
+# Duplicate
+
+![inline](./images/stream.png)
+![inline](./images/stream-dup.png)
+
+^ Talk about Duplicate/Extract law
+
+---
+
+##[fit] **_ix_** _focuses a_
+# **location**
+## _within the_ **structure**
+
+---
+
+```haskell
+ix        :: Int -> Stream a -> a
+duplicate :: Stream a -> Stream (Stream a)
+ix 10 <$> duplicate s :: Stream a
+```
 
 ---
 
@@ -249,36 +625,12 @@ join (fmap f x) :: m b
 
 ---
 
-## Comonad
-
-[.code-highlight: 1-3]
-[.code-highlight: all]
-```haskell
-f         :: Stream a -> b
-x         :: Stream a
-duplicate :: Stream a -> Stream (Stream a)
-
-duplicate x          :: Stream (Stream a)
-fmap f (duplicate x) :: Stream b
-```
-
----
-
 # Duplicate?
 
 ```haskell
 duplicate :: Stream Int -> Stream (Stream Int)
 duplicate s@(_ :> next) = s :> duplicate next
 ```
-
----
-
-# Duplicate
-
-![inline](./images/stream.png)
-![inline](./images/stream-dup.png)
-
-^ Talk about Duplicate/Extract law
 
 ---
 

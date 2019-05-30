@@ -59,7 +59,7 @@ avg xs =
     / fromIntegral (length xs)
 
 countStream :: Stream Int
-countStream = fromList [1..]
+countStream = fromList [0..]
 
 randomStream :: Stream Int
 randomStream = fromList [2, -3, -5, 6, 3, -10, 3]

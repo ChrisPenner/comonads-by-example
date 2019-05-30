@@ -1,21 +1,21 @@
-- Add Slide numbers
+Talk about Comonads & Monads relation before talking about Duals
 
-Talk about Comonads & Monads relation before talking about 
-
-Give some high-level examples to 'get on the hook'
+Give some high-level examples of comonadic operations to get peeps hooked
 
 push details back
 
-Drop extend ENTIRELY only talk about duplicate
+Drop extend ENTIRELY only talk about duplicate!
 
 Comonad Laws: Talk about intuition
 
-extend AS Query
+extend AS Query :)
 
 Talk about elementwise vs context-wise
 
 Introduce Ix in terms of Drop
 THEN the other one
+
+Less CODE more INTUITION and DIAGRAMS
 
 
 > why do you mention duals? i dont know! is it because they are DUAL TO MONADS?
