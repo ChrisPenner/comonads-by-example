@@ -16,8 +16,6 @@ slide-transition: true
 
 # REVIEW
 
-## TODO add more review here once presentations are finalized
-
 ```haskell
 class Functor w => Comonad w where
   extract :: w a -> a
@@ -829,11 +827,13 @@ times10 = traced (\(Sum n) -> n * 10 )
 [.code-highlight: 1-3]
 [.code-highlight: all]
 ```haskell
-> trace "hi" (Traced id)
+uppercase :: String -> String
+uppercase = fmap toUpper
+> trace "hi" (Traced uppercase)
 -- definition of 'trace'
-> id "hi"
--- apply id
-> "hi"
+> uppercase "hi"
+-- apply uppercase
+> "HI"
 ```
 
 ---
@@ -846,17 +846,15 @@ times10 = traced (\(Sum n) -> n * 10 )
 [.code-highlight: 1-9]
 [.code-highlight: all]
 ```haskell
-> Traced id =>> trace "hi"
+> Traced uppercase =>> trace "hi"
 -- definition of =>>
-> trace "hi" <$> (duplicate $ Traced id) 
+> trace "hi" <$> (duplicate $ Traced uppercase) 
 -- definition of duplicate
-> trace "hi" <$> (Traced $ \m -> Traced (id . mappend m)) 
+> trace "hi" <$> (Traced $ \m -> Traced (uppercase . mappend m)) 
 -- apply <$>
-> Traced $ \m -> trace "hi" (Traced (id . mappend m))
+> Traced $ \m -> trace "hi" (Traced (uppercase . mappend m))
 -- apply 'trace'
-> Traced $ \m -> (id . mappend m) "hi" 
--- apply 'id'
-> Traced $ \m -> (mappend m "hi")
+> Traced $ \m -> (uppercase . mappend m) "hi" 
 ```
 
 ---
@@ -870,15 +868,15 @@ times10 = traced (\(Sum n) -> n * 10 )
 ```haskell
 > extract $ Traced id =>> trace "hi" =>> trace "!!"
 -- Apply previous substitutions
-> extract $ Traced (\m -> (mappend m "hi")) =>> trace "!!"
+> extract $ Traced (\m -> (uppercase . mappend m) "hi") =>> trace "!!"
 -- Cancel 'extract' with =>>
-> trace "!!" (Traced $ \m -> (mappend m "hi"))
+> trace "!!" (Traced $ \m -> (uppercase . mappend m) "hi")
 -- Apply 'trace'
-> (\m -> (mappend m "hi")) "!!" 
+> (\m -> (uppercase . mappend m) "hi") "!!" 
 -- Lambda substitution
-> (mappend "!!" "hi") 
+> (uppercase . mappend "!!") "hi"
 -- Apply mappend
-> "!!hi"
+> "!!HI"
 ```
 
 ---
@@ -887,7 +885,7 @@ times10 = traced (\(Sum n) -> n * 10 )
 
 ```haskell
 exclamation :: Traced String String
-exclamation = traced (\s -> toUpper <$> s <> "!!")
+exclamation = traced (\s -> uppercase (s <> "!!"))
 
 λ> trace "hello" exclamation
 "HELLO!!"
@@ -903,6 +901,7 @@ exclamation = traced (\s -> toUpper <$> s <> "!!")
 
 [.code-highlight: 1-2]
 [.code-highlight: 1-5]
+[.code-highlight: 1-8]
 [.code-highlight: all]
 
 ```haskell
@@ -916,6 +915,8 @@ t = traced (intercalate " AND A ")
 ("one AND A two",["one","two"])
 λ> extract $ listen t =>> trace ["one"] =>> trace ["two"]
 ("two AND A one",["two","one"])
+λ> extract $ listen (t =>> trace ["one"] =>> trace ["two"])
+("two AND A one",[])
 ```
 
 ---

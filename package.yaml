@@ -27,6 +27,7 @@ dependencies:
 - directory
 - adjunctions
 - distributive
+- streams
 # - brick
 # - vty
 # - kan-extensions
