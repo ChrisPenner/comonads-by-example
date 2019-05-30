@@ -1,6 +1,7 @@
 build-lists: true
 theme: Ostrich, 3
 slide-transition: true
+slidenumbers: true
 
 ^ background-color: #0F0E0E
 ^ text: #FF5481
@@ -636,9 +637,9 @@ Tricksy
 
 ```haskell
 subNegative:: Stream Int -> Stream Int
-λ> negStream
+λ> input
 2 :> -3 :> -5 :> 6 :> 3 :> -10 :> 3 :> 2 :> ...
-λ> subNegative negStream
+λ> subNegative input
 2 :>  6 :>  6 :> 6 :> 3 :>   3 :> 3 :> 2 :> ...
 ```
 

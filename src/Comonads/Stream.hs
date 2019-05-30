@@ -61,8 +61,8 @@ avg xs =
 countStream :: Stream Int
 countStream = fromList [1..]
 
-negStream :: Stream Int
-negStream = fromList [2, -3, -5, 6, 3, -10, 3]
+randomStream :: Stream Int
+randomStream = fromList [2, -3, -5, 6, 3, -10, 3]
 
 -- subNegative:: Stream Int -> Stream Int
 -- λ> randomStream
