@@ -65,7 +65,7 @@ Comonads represent **SPACES** with a **reference point**
 
 # Spreadsheets
 
-![inline](./images/spreadsheet.png)
+![inline](./images/spreadsheets/spreadsheet.png)
 
 ---
 
@@ -450,7 +450,7 @@ instance Comonad Stream where
 
 # Spreadsheets
 
-![inline](./images/spreadsheet.png)
+![inline](./images/spreadsheets/spreadsheet.png)
 
 ---
 

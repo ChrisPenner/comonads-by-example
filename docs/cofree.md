@@ -51,6 +51,10 @@ type Stream a = Cofree Identity a
 ---
 
 ```haskell
+data Cofree f a = a :< f (Cofree f a)
+
+
+
 0, 1, 2, 3, ...
 =~
 0 :< Identity (1 :< Identity (2 :< Identity (3 :< ...)))
@@ -78,6 +82,11 @@ coiter :: Functor f
 ---
 
 ```haskell
+coiter :: Functor f 
+       => (a -> f a) 
+       -> a 
+       -> Cofree f a
+
 count' :: Cofree Identity Int
 count' = coiter coalg 0
   where
@@ -167,7 +176,9 @@ fileTree :: IO (Tree FilePath)
 fileTree = unfoldM crawl "."
   where
     crawl :: FilePath -> IO (FilePath, [FilePath])
-    crawl path = (,) path <$> listDirectory' path
+    crawl path = do
+      nextLevel <- listDirectory' path
+      return  (path, nextLevel)
 ```
 
 ---

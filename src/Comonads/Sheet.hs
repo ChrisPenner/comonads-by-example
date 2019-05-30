@@ -9,15 +9,15 @@ import Comonads.Store
 import Data.Stream.Infinite
 import Debug.Trace
 
-data Sheet a =
-    Sheet
-    { prices       :: Stream a
-    , quants       :: Stream a
-    , costs        :: Stream a
-    , tax          :: a
-    , total        :: a
-    , totalWithTax :: a
-    } deriving Functor
+-- data Sheet a =
+--     Sheet
+--     { prices       :: Stream a
+--     , quants       :: Stream a
+--     , costs        :: Stream a
+--     , tax          :: a
+--     , total        :: a
+--     , totalWithTax :: a
+--     } deriving Functor
 
 -- instance Distributive Sheet where
 --   distribute = distributeRep
