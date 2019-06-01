@@ -265,10 +265,13 @@ ix n (_ :> rest) = ix (n - 1) rest
 
 ---
 
+#[fit] `followPath :: [e] -> Graph e v -> Graph e v`
+
+---
+
 ```haskell
-scanl :: (b -> a -> b) 
-      -> b 
-      -> [a] -> [b]
+scanl1 :: (a -> a -> a) 
+       -> [a] -> [a]
 ```
 
 ---
@@ -300,7 +303,6 @@ scanl :: (b -> a -> b)
 * Solve Hill Climbing Problems
 * Compute Roots using Newton's Method
 * Compute dependency trees
-* Graph Traversals
 * Crush the Coding Interview (Rainwater Problem)
 
 ---
@@ -324,10 +326,8 @@ want:
 ## **Similar??**
 
 ```haskell
-have:
 ix    :: Int -> Stream a ->        a
 
-want:
 dropS :: Int -> Stream a -> Stream a
 ```
 
@@ -353,6 +353,9 @@ dropS :: Int -> Stream a -> Stream a
 
 # [fit] `join :: m (m a) -> m a`
 
+---
+
+# [fit] `join :: m (m a) -> m a`
 # [fit] **`cojoin?? :: w a -> w (w a)`**
 
 ---
@@ -375,6 +378,7 @@ dropS :: Int -> Stream a -> Stream a
 #[fit] **Nests** your **Structure**
 ### while maintaining
 #[fit] **Context**
+#### _*we'll talk about laws later_
 
 ---
 
@@ -384,77 +388,316 @@ dropS :: Int -> Stream a -> Stream a
 
 ---
 
+# [fit] `duplicate :: Stream a -> Stream (Stream a)`
+
+---
+
+
+### `stream`
+![inline](./images/stream.png)
+### `duplicate stream`
+![inline](./images/stream-dup.png)
+
+---
 
 ```haskell
 λ> countStream
 1 :> 2 :> 3 :> 4 :> 5 :> ...
 
 λ> duplicate countStream
-(1 :> 2 :> ...) 
-  :> (2 :> 3 :> ...) 
-  :> (3 :> 4 :>...) 
-  :> ...
-
+   (1 :> 2 :> 3 :> ...)
+:> (2 :> 3 :> 4 :> ...) 
+:> (3 :> 4 :> 5 :> ...) 
+:> ...
 ```
-
----
-
-# Duplicate
-
-![inline](./images/stream.png)
-![inline](./images/stream-dup.png)
-
-^ Talk about Duplicate/Extract law
-
----
-
-##[fit] **_ix_** _focuses a_
-# **location**
-## _within the_ **structure**
 
 ---
 
 ```haskell
-ix        :: Int -> Stream a -> a
-duplicate :: Stream a -> Stream (Stream a)
-ix 10 <$> duplicate s :: Stream a
+λ> duplicate countStream
+   (1 :> 2 :> 3 :> ...) -- The original stream
+:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
+:> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
+:> ...                  -- Continue ad nauseam...
 ```
 
 ---
 
-## What are they?
-
-Comonads represent **SPACES** with a **reference point**
-
----
-
-# Non-Empty Lists
-
-![inline](./images/list.png)
+##[fit] *Duplicate*
+### shows us all possible 
+##[fit]**views**
+### of a **structure**
 
 ---
 
-# Trees
-
-![inline](./images/tree.png)
-
----
-
-# Spreadsheets
-
-![inline](./images/spreadsheets/spreadsheet.png)
+##[fit] Each **View**
+### appears in a
+#[fit] **slot**
+### according to _some_ Intuition
+#### _and some laws which we'll talk about later_
 
 ---
 
-# Zipper
+```haskell
+λ> duplicate countStream
+   (1 :> 2 :> 3 :> ...) -- The original stream
+:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
+:> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
+:> ...                  -- Continue ad nauseam...
+```
+
+---
+
+![fit](./images/questions/simpsons-questions.gif)
+
+---
+
+##[fit] **_ix_** _focuses a_
+# **slot**
+## _within the_ **structure**
+
+---
+
+#[fit] **duplicate**
+### fills each 
+#[fit] **slot**
+### with the stream 
+### **focused** on that position
+
+---
+
+#[fit] **`ix`**
+#[fit] _+_
+#[fit] **`duplicate`**
+#[fit] _=_
+#[fit] **`dropS`**
+
+---
+
+
+```haskell
+λ> duplicate countStream
+   (1 :> 2 :> 3 :> ...) -- The original stream
+:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
+:> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
+:> ...                  -- Continue ad nauseam...
+
+λ> ix 2 (duplicate countStream)
+2 :> 3 :> 4 :> 5 :> 6 :> ...
+
+λ> ix 42 (duplicate countStream)
+42 :> 43 :> 44 :> 45 :> 46 :> ...
+```
+
+---
+
+#[fit] **Duplicate**
+### helps us lift
+#[fit] **Query**
+### into a
+#[fit] **Mutation**
+
+---
+
+# `dropS`
+
+```haskell
+dropS :: Int -> Stream a -> Stream a
+dropS n s = ix n (duplicate s)
+```
+
+####_*error handling is for wimps_
+
+---
+
+# **_COOL_** _COOL_ **_COOL_**
+
+---
+
+![](./images/flavour/theres-more.gif)
+
+---
+
+# Can we go 
+# **back**?
+
+![original](./images/flavour/doc-brown.jpg)
+
+---
+
+### Can we turn a 
+#[fit] **mutation**
+### into a 
+#[fit] **query**?
+
+---
+
+can we use this:
+#[fit]`dropS :: Int -> Stream a -> Stream a`
+to implement this:
+#[fit]`ix    :: Int -> Stream a ->        a`
+??
+
+---
+
+#[fit]`dropS :: Int -> Stream a -> Stream a`
+#[fit]`ix    :: Int -> Stream a ->        a`
+
+---
+
+
+```haskell
+λ> dropS 1 countStream          λ> ix 1 countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...    1
+^
+
+λ> dropS 2 countStream          λ> ix 2 countStream
+2 :> 3 :> 4 :> 5 :> 6 :> ...    2
+^
+```
+
+---
+
+#[fit] `ix n s = ix 0 (dropS n s)`
+
+#### * but infinite loops make me sad 😭
+
+---
+
+```haskell
+ix :: Int -> Stream a -> a
+ix n s = ix 0 (dropS n s)
+```
+
+---
+
+#[fit] `ix 0`
+### is **special**
+
+---
+
+## It 
+#[fit] **extracts**
+## the 
+#[fit]**focused** **slot**
+
+---
+
+#[fit] `extract :: Stream a -> a`
+
+---
+
+# #ez-pz 🍋  squeezy
+
+```haskell
+extract :: Stream a -> a
+extract (a :> _) = a
+```
+
+#[fit] `extract == ix 0`
+
+---
+
+#[fit] **Extract**
+### is the
+#[fit] *null/no-op*
+#[fit] **query**
+
+---
+
+##[fit]👨‍⚖️ Laws 👩‍⚖️
+
+---
+
+#[fit] `extract (duplicate w) == w`
+
+---
+
+#[fit] `extract <$> duplicate w == w`
+
+---
+
+#[fit] `duplicate (duplicate w)`
+# `==`
+#[fit] `duplicate <$> duplicate w`
+
+---
+
+#[fit] **Comonads**
+### are 
+#[fit] **structures**
+### or
+#[fit]**spaces**
+
+---
+
+### that we can 
+#[fit] **view** 
+### from different 
+#[fit] **focuses**
+
+---
+
+### The 
+#[fit] **view**
+### can be
+#[fit] _incomplete_
+
+---
+
+# **COMONADS**
+
+---
+
+
+
+![right fit](./images/tree.png)
+
+#[fit] Trees
+
+#[fit]  nodes _are the_ **slots**
+#[fit] **views** _are_ subtrees
+#[fit] **extract** _the_ subtree's root
+
+---
+
+#[fit] Spreadsheets
+
+#[fit]  cells _are the_ **slots**
+#[fit] **views** _are_ relative
+#[fit] **extract** _the_ focused cell
+
+![right fit](./images/spreadsheets/spreadsheet.png)
+
+---
+
+#[fit] Non-Empty Lists
+
+#[fit]  elements _are the_ **slots**
+#[fit] **views** _are_ list tails
+#[fit] **extract** _the_ head of the list
+
+![right fit](./images/list.png)
+
+---
+
+#[fit] Zippers
+
+#[fit]  elements _are the_ **slots**
+#[fit] **views** _are_ doubly linked lists
+#[fit] **extract** _the_ focus of the doubly linked list
 
 ![inline](./images/zipper.png)
 
 ---
 
-# Functions
+#[fit] Functions
 
-![inline](./images/function-plot.png)
+#[fit]  x-axis positions _are the_ **slots**
+#[fit] **views** _are relative to your_ x
+#[fit] **extract** _the_ Y _at your_ X
+
+![right fit](./images/function-plot.png)
 
 ---
 
@@ -672,11 +915,20 @@ rollingAvg windowSize input =
 1 :> 2 :> 3 :> 4 :> 5 :> ...
 
 λ> duplicate countStream
-(1 :> 2 :> ...) 
-  :> (2 :> 3 :> ...) 
-  :> (3 :> 4 :>...) 
-  :> ...
+   (1 :> 2 :> 3 :> ...)
+:> (2 :> 3 :> 4 :> ...) 
+:> (3 :> 4 :> 5 :> ...) 
+:> ...
+```
 
+---
+
+```haskell
+λ> duplicate countStream
+   (1 :> 2 :> 3 :> ...) -- The original stream
+:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
+:> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
+:> ...                  -- Continue ad nauseam...
 ```
 
 ---

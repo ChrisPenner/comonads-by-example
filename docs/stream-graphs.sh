@@ -57,7 +57,6 @@ rankdir=LR;
 subgraph cluster_a {
     color="$focused"
     penwidth="7"
-    label="a'"
     style=rounded;
     a1[label="a" style="filled" fillcolor="$focused"]
     b1[label="b" style=filled fillcolor="$selected"]
@@ -69,7 +68,6 @@ subgraph cluster_a {
 subgraph cluster_b {
     color="$selected"
     penwidth="7"
-    label="b'"
     style=rounded;
     b2[label="b" style="filled" fillcolor="$focused"]
     c2[label="..." style="filled" fillcolor="$selected"]
@@ -79,7 +77,6 @@ subgraph cluster_b {
 subgraph cluster_c {
     color="$selected"
     penwidth="7"
-    label="..."
     style=rounded;
     c3[label="..." style=filled fillcolor="$focused"]
 }
