@@ -75,11 +75,13 @@ stack build
 
 ---
 
-#[fit]  **Effects**
+#[fit]  **Effects** *
 ##[fit] _Add a_ Context
 ##[fit] _To an_ Element
 
 #[fit] `a -> m b`
+
+#### *a.k.a co-algebras
 
 ---
 
@@ -96,7 +98,7 @@ stack build
 
 
 #[fit] `a -> m b`
-#[fit] __`b <- w a`__
+#[fit] __`a <- w b`__
 
 ---
 
@@ -107,9 +109,11 @@ stack build
 
 ---
 
-# [fit] **Co**Effects
+# [fit] **Co**Effects *
 ## [fit] are **Queries**
 ## [fit] over a **Structure**
+
+#### *a.k.a algebras
 
 ---
 
@@ -141,12 +145,6 @@ stack build
 
 ---
 
-#[fit] _Confusing?_
-
-##[fit] _let's add some_ **context**
-
----
-
 #[fit] Monads
 ###[fit] are a **context**
 ###[fit] where we can introduce **effects**
@@ -155,9 +153,16 @@ stack build
 
 #[fit] **Co**monads
 ###[fit] are a **context**
-###[fit] where we can extract run **queries**
+###[fit] where we can run **queries**
 
 ---
+
+#[fit] _Confusing?_
+
+##[fit] _let's add some_ **context**
+
+---
+
 
 #[fit] Let's look at a specific **context**
 #[fit] `  `
@@ -167,14 +172,17 @@ stack build
 
 ---
 
-`:>` is an **infix** data constructor
 
 ```haskell
 data Stream a = a :> Stream a
        deriving (Functor, Foldable)
 ```
 
+####  `:>` is an **infix** data constructor
+
 ---
+
+# Helpers
 
 ```haskell
 fromList :: [a] -> Stream a
@@ -192,7 +200,9 @@ countStream = fromList [0..]
 # Let's write some 
 ##[fit] **Q**u**e**r**i**e**s**
 
-a.k.a. **Co**Effects
+a.k.a. **Co**Effects[^**]
+
+[^**]: a.k.a. algebras
 
 ---
 
@@ -210,6 +220,9 @@ ix n (_ :> rest) = ix (n - 1) rest
 ---
 
 ```haskell
+λ> countStream
+0 :> 1 :> 2 :> 3 :> 4 :> ...
+
 λ> ix 0 countStream
 0
 
@@ -269,10 +282,7 @@ ix n (_ :> rest) = ix (n - 1) rest
 
 ---
 
-```haskell
-scanl1 :: (a -> a -> a) 
-       -> [a] -> [a]
-```
+#[fit] `scanl1 :: (a -> a -> a) -> [a] -> [a]`
 
 ---
 
@@ -291,10 +301,6 @@ scanl1 :: (a -> a -> a)
 
 # [fit]`derivative :: (Double -> Double) -> (Double -> Double)`
 
-
----
-
-#[fit] `gaussianBlur :: Image Pixel -> Image Pixel`
 
 ---
 
@@ -405,16 +411,6 @@ dropS :: Int -> Stream a -> Stream a
 1 :> 2 :> 3 :> 4 :> 5 :> ...
 
 λ> duplicate countStream
-   (1 :> 2 :> 3 :> ...)
-:> (2 :> 3 :> 4 :> ...) 
-:> (3 :> 4 :> 5 :> ...) 
-:> ...
-```
-
----
-
-```haskell
-λ> duplicate countStream
    (1 :> 2 :> 3 :> ...) -- The original stream
 :> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
 :> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
@@ -434,11 +430,16 @@ dropS :: Int -> Stream a -> Stream a
 ### appears in a
 #[fit] **slot**
 ### according to _some_ Intuition
-#### _and some laws which we'll talk about later_
+#### * _and some laws which I promise we'll talk about real soon_
 
 ---
 
+# Think about each **slot**
+
 ```haskell
+λ> countStream
+1 :> 2 :> 3 :> 4 :> 5 :> ...
+
 λ> duplicate countStream
    (1 :> 2 :> 3 :> ...) -- The original stream
 :> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
@@ -461,8 +462,15 @@ dropS :: Int -> Stream a -> Stream a
 #[fit] **duplicate**
 ### fills each 
 #[fit] **slot**
-### with the stream 
-### **focused** on that position
+### with a copy of the _s t r e a m_
+### **viewed** from that position
+
+---
+
+##[fit] So if **duplicating** gets us all the **views**
+### and
+##[fit] _ix_ can **select** one of those **views**
+##[fit] then...
 
 ---
 
@@ -506,11 +514,13 @@ dropS :: Int -> Stream a -> Stream a
 dropS n s = ix n (duplicate s)
 ```
 
-####_*error handling is for wimps_
+####_error handling is for nerds_ 🤓
 
 ---
 
-# **_COOL_** _COOL_ **_COOL_**
+#[fit] **_COOL_** _COOL_ **_COOL_**
+
+##[fit] Questions?
 
 ---
 
@@ -643,6 +653,17 @@ extract (a :> _) = a
 ### can be
 #[fit] _incomplete_
 
+
+---
+
+```haskell
+class Functor w => Comonad w where
+  extract   :: w a -> a
+  duplicate :: w a -> w (w a)
+  extend    :: (w a -> b) -> w a -> w b
+{-# MINIMAL extract, (duplicate | extend) #-}
+```
+
 ---
 
 # **COMONADS**
@@ -693,11 +714,49 @@ extract (a :> _) = a
 
 #[fit] Functions
 
+### *when paired with an X-value
+
 #[fit]  x-axis positions _are the_ **slots**
 #[fit] **views** _are relative to your_ x
 #[fit] **extract** _the_ Y _at your_ X
 
 ![right fit](./images/function-plot.png)
+
+---
+
+#[fit] _NOT_
+#[fit] **Comonads**
+
+---
+
+#[fit] Lists
+
+#[fit] Can't always **extract**
+
+---
+
+#[fit] Functions
+
+### *_when_ not _paired with an_ X-value
+
+#[fit] _which_ Y _do we_ **extract**?
+
+---
+
+#[fit] `IO`
+
+#[fit] Can't get values **OUT**
+
+---
+
+#[fit] Maybe / Either
+
+### Can't always **extract**
+
+---
+
+# Quiz Me
+## Is it a **comonad**??
 
 ---
 
