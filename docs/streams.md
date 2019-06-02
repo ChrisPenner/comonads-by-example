@@ -2,6 +2,7 @@ build-lists: true
 theme: Ostrich, 3
 slide-transition: true
 slidenumbers: true
+footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 📝 chrispenner.ca`
 
 ^ background-color: #0F0E0E
 ^ text: #FF5481
@@ -340,7 +341,7 @@ dropS :: Int -> Stream a -> Stream a
 ---
 
 
-### Can we turn 
+### Can we turn a
 #[fit]**query** 
 ### into a 
 #[fit]**mutation**?
@@ -500,7 +501,7 @@ dropS :: Int -> Stream a -> Stream a
 ---
 
 #[fit] **Duplicate**
-### helps us lift
+### helps us lift a
 #[fit] **Query**
 ### into a
 #[fit] **Mutation**
@@ -615,8 +616,6 @@ extract (a :> _) = a
 ---
 
 ##[fit]👨‍⚖️ Laws 👩‍⚖️
-
-#### _*okay so like_ one _more slide_
 
 ---
 
@@ -941,7 +940,7 @@ rollingAvg  :: Int -> Stream Int -> Stream Double
 ---
 
 
-![fit](./images/questions/ask-me-anything.gif)
+![fit](./images/questions/any-questions-dwight.gif)
 
 ---
 

@@ -2,6 +2,7 @@ build-lists: true
 theme: Ostrich, 3
 slide-transition: true
 slidenumbers: true
+footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 📝 chrispenner.ca`
 
 ^ background-color: #0F0E0E
 ^ text: #FF5481
