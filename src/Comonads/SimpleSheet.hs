@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TupleSections #-}
-module Comonads.Sheet where
+module Comonads.SimpleSheet where
 
 import Control.Comonad
 import Comonads.Store

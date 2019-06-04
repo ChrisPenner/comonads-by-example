@@ -409,12 +409,12 @@ dropS :: Int -> Stream a -> Stream a
 
 ```haskell
 λ> countStream
-1 :> 2 :> 3 :> 4 :> 5 :> ...
+0 :> 1 :> 2 :> 3 :> 4 :> ...
 
 λ> duplicate countStream
-   (1 :> 2 :> 3 :> ...) -- The original stream
-:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the second element
-:> (3 :> 4 :> 5 :> ...) -- The stream viewed from the third element
+   (0 :> 1 :> 2 :> ...) -- The original stream
+:> (1 :> 2 :> 3 :> ...) -- The stream viewed from the second element
+:> (2 :> 3 :> 4 :> ...) -- The stream viewed from the third element
 :> ...                  -- Continue ad nauseam...
 ```
 
