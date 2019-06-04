@@ -28,6 +28,7 @@ dependencies:
 - adjunctions
 - distributive
 - streams
+- text
 # - brick
 # - vty
 # - kan-extensions

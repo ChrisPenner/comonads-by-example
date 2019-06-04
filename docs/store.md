@@ -214,255 +214,6 @@ class Functor w => Comonad w where
 
 ---
 
-# Comonads 
-## As Abstract Spaces
-
----
-
-# Identity
-
-```haskell
-data Identity a = Identity a
-
-instance Comonad Identity where
-extract :: Identity a -> a
-extract   (Identity a) = ???
-```
-
----
-
-# Identity
-```haskell
-extract   (Identity a) = a
-```
----
-
-# Identity
-```haskell
-duplicate (Identity a) = ???
-```
----
-
-# Identity
-```haskell
-duplicate (Identity a) = Identity (Identity a)
-```
----
-
-# Identity
-```haskell
-extend :: (Identity a -> b) 
-       -> Identity a 
-       -> Identity b
-extend f  (Identity a) = ???
-```
-
----
-
-# Identity
-```haskell
-extend :: (Identity a -> b) 
-       -> Identity a 
-       -> Identity b
-extend f  (Identity a) = Identity (f (Identity a))
-```
-
----
-
-# Env a.k.a. Co-Reader 
-## `a.k.a. (e, a)`
-
-```haskell
-data Env e a = Env e a
-    deriving (Eq, Show, Functor)
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-instance Comonad (Env e) where
-extract :: Env e a -> a
-extract   (Env _ a) = ???
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-instance Comonad (Env e) where
-extract :: Env e a -> a
-extract   (Env _ a) = a
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-duplicate :: Env e a -> Env e (Env e a)
-duplicate (Env e a) = ???
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-duplicate :: Env e a -> Env e (Env e a)
-duplicate (Env e a) = Env e (Env e a)
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-extend :: (Env e a -> b) 
-       -> Env e a 
-       -> Env e b
-extend f  (Env e a) = ???
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-extend :: (Env e a -> b) 
-       -> Env e a 
-       -> Env e b
-extend f  (Env e a) = Env e (f (Env e a))
-```
-
----
-# Env a.k.a. Co-Reader 
-
-
-[.code-highlight: 1-3]
-[.code-highlight: 4-5]
-[.code-highlight: all]
-```haskell
-ask :: Env e a -> e
-ask (Env e _) = e
-
-asks :: (e -> e') -> Env e a -> e'
-asks f (Env e _) = f e
-```
-
----
-# Env a.k.a. Co-Reader 
-
-```haskell
-local :: (e -> e') -> Env e a -> Env e' a
-local f (Env e a) = Env (f e) a
-```
-
----
-
-# Env Intuition
-
-| **extract:** | Get the value | 
-| ---: | :--- |
-| **extend:** | Use the environment AND value in a computation |
-| **ask:** | What's my context? |
-| **local:** | Adjust the context |
-
----
-
-# Env Example
-
-```haskell
-vowels :: String
-vowels = "aAeEiIoOuU"
-
-filtered :: Env String String -> String
-filtered w = let invalid = ask w
-              in filter (not . (`elem` invalid)) $ extract w
-
-append :: String -> Env e String -> String              
-append s w = extract w ++ s
-
-extract $ env vowels "Hello World" =>> filtered =>> append "!!"
---- > Hll Wrld!!
-extract $ env vowels "Hello World" =>> filtered . local (++ ['A'..'Z'])
---- > ll rld
-```
-
----
-
-# Env Example
-
-```haskell
-type Range = (Int, Int)
-
-clamp :: Env Range Int -> Int
-clamp w = 
-    let (lowest, highest) = ask w
-    in max lowest . min highest . extract $ w
-
-λ> clamp (Env (0, 10) 15)
-10
-λ> extend clamp (Env (0, 10) 15)
-Env (0,10) 10
-```
-
----
-
-# Env Example
-
-```haskell
-moveBy :: Int -> Env Range Int -> Int
-moveBy n = clamp . fmap (+n)
-
-moveTo :: Int -> Env Range Int -> Int
-moveTo n = clamp . fmap (const n)
-
-adjustUpper :: Int -> Env Range Int -> Env Range Int
-adjustUpper n = local (second (+n))
-
-adjustLower :: Int -> Env Range Int -> Env Range Int
-adjustLower n = local (first (+n))
-```
-
----
-
-[.code-highlight: 1-3]
-[.code-highlight: 1-6]
-[.code-highlight: 1-9]
-[.code-highlight: 1-12]
-[.code-highlight: all]
-
-```haskell
-λ> x = Env (0, 5) 3
-Env (0,5) 3
-
-λ> x =>> moveBy 1
-Env (0,5) 4
-
-λ> x =>> moveBy 5
-Env (0,5) 5
-
-λ> x =>> moveTo 30
-Env (0,5) 5
-
-λ> adjustUpperBy 10 x =>> moveBy 5
-Env (0,15) 8
-
-```
-
----
-
-# [fit] Questions**?**
-
----
-
-# Store a.k.a. Co-State 
-## `a.k.a (s, s -> a)`
-
-```haskell
-data Store s a = Store (s -> a) s
-    deriving Functor
-```
-
----
-
 # Store
 
 ```haskell
@@ -472,79 +223,169 @@ extract (Store f s) = f s
 ```
 
 ---
-# Store
 
-```haskell
-duplicate :: Store s a -> Store s (Store s a)
-duplicate (Store f s) =
-    Store (\s' -> Store f s') s
-```
+#[fit] **STORE**
 
----
-# Store
-
-[.code-highlight: 1-3]
-[.code-highlight: 4-6]
-[.code-highlight: 7-8]
-[.code-highlight: all]
-
-```haskell
-pos :: Store s a -> s
-pos (Store _ s) = s
-
-peek :: s -> Store s a -> a
-peek s (Store f _) = f s
-
-peeks :: (s -> s) -> Store s a -> a
-peeks g (Store f s) = f (g s)
-```
+#[fit] Stuff stored by key
 
 ---
 
-# Store
+## So what's a 
+#[fit] **store?**
+
+---
+
+#[fit] Store 
+### _a.k.a. Co-State_
+
+#[fit] A **slot** for every _key_
+#[fit] A **view** from every _key_
+#[fit] **extract** the value at your _key_
+![right](./images/store/warehouse.jpg) 
+
+---
+
+### Store (a.k.a. Co-State)
+
+#[fit] `data Store s a = Store (s -> a) s`
+
+---
+
+#[fit] **Store**
+### Has a
+#[fit] **getter**
+### and a
+#[fit] **key**
+
+---
+
+#[fit] **Store**
+#[fit] **Queries**
+
+---
+
+#[fit] **POS**
+#[fit] `pos :: Store s a -> s`
+## Gets the 
+## current **key**
+
+---
+
+#[fit] **EXTRACT**
+#[fit] `extract :: Store s a -> a`
+## Gets the  **slot**
+## at the current **key**
+
+
+---
+
+#[fit] **PEEK**
+#[fit] `peek :: s -> Store s a -> a`
+##[fit] extracts the **slot** at another **key**
+
+#### * Extraction Query!!
+
+---
 
 ```haskell
 squared :: Store Int Int
-squared = Store (\x -> x^2) 10
+squared = 
+  Store (\x -> x^2) -- The getter
+        10          -- The current key
 
 λ> pos squared
 10
+
 λ> extract squared
 100 -- 10^2
+
 λ> peek 2 squared
 4 -- 2^2
+```
+
+---
+
+#[fit] **PEEKS**
+#[fit] `peeks :: (s -> s) -> Store s a -> a`
+##[fit] Get a slot **relative**
+##[fit] To current **key**
+
+---
+
+```haskell
+squared :: Store Int Int
+squared = 
+  Store (\x -> x^2) -- The getter
+        10          -- The current key
+
 λ> peeks (+2) squared
 144 -- (10 + 2)^2
 ```
 
 ---
 
-# Store
-
-```haskell
-seek :: s -> Store s a -> Store s a
-seek s (Store f _) = Store f s
-
-seeks :: (s -> s) -> Store s a -> Store s a
-seeks g (Store f s) = Store f (g s)
-
-λ> extract $ seek 5 squared
-25 -- 5^2
-λ> extract $ seeks (+5) squared
-225 -- (10 + 5)^2
-```
-
+#[fit] **RELATIVE QUERIES**
+### _like peeks_
+#[fit] Have different results
+#[fit] depending on the **view**
 
 ---
 
-# Store Intuition
+#[fit] `ix 42`
+#[fit] is another **relative** query
 
-| **extract:** | Get the value stored at the current key   | 
-| ---: | :--- |
-| **extend:** | Shift values (peek) or combine related values |
-| **pos:** | Where am I? |
-| **peek:** | What's at this key? |
-| **seek:** | Move to another key |
+---
+
+#[fit] **ABSOLUTE QUERIES**
+#[fit] *Ignore*
+#[fit] the current **view**
+
+---
+
+#[fit] `peek 2`
+#[fit] is an **absolute** query
+
+---
+
+#[fit] Store
+#[fit] **Mutations**
+
+---
+
+#[fit] **SEEK**
+#[fit] `seek :: s -> Store s a -> Store s a`
+##[fit] Focus the **slot** 
+### at the 
+##[fit] given **key**
+
+---
+
+#[fit] **SEEK**
+### is an
+#[fit] **absolute** mutation
+
+---
+
+# Store
+
+```haskell
+λ> pos $ seek 5 squared
+5
+
+λ> pos $ seek 3 squared
+3
+
+λ> extract $ seek 3 squared
+9
+```
+
+---
+
+#[fit] **SEEKS**
+#[fit] `seeks :: (s -> s) -> Store s a -> Store s a`
+##[fit] The **relative**
+#### version of
+##[fit] **seek**
 
 ---
 
@@ -559,7 +400,11 @@ populations =
                , ("United States", 329093110)
                , ("Germany",       82438639)
                ]
+```
 
+---
+
+```haskell
 λ> lookup "Canada" populations
 Just 37279811
 
@@ -573,8 +418,10 @@ Nothing
 ```haskell
 countryPopulation :: Store String (Maybe Int)
 countryPopulation 
-  = Store (\country -> lookup country populations) "Canada"
+  = store (\country -> lookup country populations) "Canada"
 ```
+
+---
 
 ```haskell
 λ> pos countryPopulation
@@ -606,16 +453,82 @@ popDefault :: Store String Int
 ```
 
 ---
+
+#[fit] But like...
+#[fit] that's basically just a **function** right?
+#### _I'm not impressed so easily_
+
+---
+
+#[fit] **Duplicate**
+##[fit] Puts the **getter** 
+## in each **slot**
+#[fit] with that **slot's key**
+
+---
+
+#[fit] WUT?
+#[fit] 🐣
+
+---
+
+#[fit] Let's get
+#[fit] **A**b**s**t**r**a**c**t
+
+---
+
+TODO duplicate
+
+---
+
+#[fit] Experiment
+
+![](./images/store/experiment.jpg)
+
+---
+
+#[fit] It's really annoying
+##[fit] to **peek** at **lots** of nearby values
+
+---
+
+## What if we want to 
+#[fit] **keep track**
+## of the results?
+
+---
+
+## Or even 
+#[fit] **fail**
+#[fit] based on our **position**?
+
+---
+
+## Experiment
+### Gets a
+#[fit] **BUNCH**
+### of values
+#[fit] **relative** to your position
+
+
+---
+
+# **experiment**
+```haskell
+experiment :: Functor f 
+           => (s -> f s) 
+           -> Store s a 
+           -> f a
+```
+
+---
+
 # Store Example: Dictionary
 
 [.code-highlight: 1-3]
 [.code-highlight: all]
 
 ```haskell
-experiment :: Functor f 
-           => (s -> f s) -> Store s a -> f a
-experiment search (Store f s) = f <$> search s
-
 λ> experiment (const ["Canada", "Poland", "Germany"]) popDefault
 [37279811, 38028278, 82438639]
 ```
@@ -624,15 +537,22 @@ experiment search (Store f s) = f <$> search s
 # Store Example: Squared
 
 ```haskell
-λ> experiment (\n -> [n - 10, n + 10, n + 20, n + 30]) squared
+λ> experiment (\n -> [n - 10, n + 10]) squared
 [ 0    -- (10-10)^2
 , 400  -- (10+10)^2
-, 900  -- (10+20)^2
-, 1600 -- (10+30)^2
 ]
+```
 
-λ> experiment (\n -> (n, n)) squared
-(10,100)
+---
+
+```haskell
+aboveZero n | n > 0     = Just n
+            | otherwise = Nothing
+λ> experiment aboveZero (seeks 10 squared)
+Just 100
+
+λ> experiment aboveZero (seeks (-10) squared)
+Nothing
 ```
 
 ---
@@ -644,11 +564,8 @@ experiment search (Store f s) = f <$> search s
 [.code-highlight: all]
 
 ```haskell
-λ> extract squared
-100
-
 withN :: Store Int (String, Int)
-withN = extend (experiment (\n -> (show n, n))) squared
+withN = squared =>> experiment (\n -> (show n, n))
 
 λ> extract withN
 ("10",100)
@@ -667,7 +584,7 @@ withN = extend (experiment (\n -> (show n, n))) squared
 
 ```haskell
 shifted :: Store Int (String, Int)
-shifted = extend (peeks (+10)) withN
+shifted = withN =>> (peeks (+10))
 
 λ> extract shifted
 ("20",400)
@@ -697,16 +614,6 @@ shifted = extend (peeks (+10)) withN
 
 ---
 
-github.com/alella/GOL
-
-![fit](./images/conway/rules.gif)
-
----
-
-![fit](./images/conway/rules.gif)
-
----
-
 ![fit](./images/conway/glider.gif)
 
 ---
@@ -714,6 +621,8 @@ github.com/alella/GOL
 ![fit](./images/conway/glider-gun.gif)
 
 ---
+
+#[fit] We gonna build this:
 
 ```haskell
 λ> animateGrid startingGrid
@@ -723,6 +632,38 @@ github.com/alella/GOL
 .......|.......|.......|..#....|..##...
 .......|.......|.......|.......|.......
 ```
+
+---
+
+# 🤓 Let's plan
+
+---
+
+#[fit] We need to represent a 
+#[fit] _2D_ **GRID**
+#[fit] of **cells**
+
+---
+
+#[fit] Each **cell**
+### is either
+#[fit] _Alive_
+### or
+#[fit] _Dead_
+
+---
+
+#[fit] so I'm **thinking**
+
+#[fit]`Store (Sum Int, Sum Int) Bool`
+
+---
+
+#[fit] `(row, column) -> alive?`
+
+---
+
+#[fit] Questions?
 
 ---
 
@@ -755,546 +696,187 @@ False
 λ> peek (1, 0) startingGrid
 True
 
-λ> putStrLn $ drawGrid 3 startingGrid
+λ> putStrLn . drawGrid 3 $ startingGrid
 ..#
 #.#
 .##
-
-λ> putStrLn . drawGrid 3 $ step startingGrid
-.#.
-..#
-.##
 ```
 
 ---
 
-```haskell
-computeCellLiveness :: Store (Sum Int, Sum Int) Bool 
-                    -> Bool
+## We want a 
+#[fit] **mutation**
+## which simulates a
+#[fit] **step**
 
+---
+
+#[fit] as **always**
+# let's break it down ⬇
+## _into_ **queries**
+
+---
+
+# Query:
+
+```haskell
+checkCellAlive :: Store (Sum Int, Sum Int) Bool
+               -> Bool
+```
+
+---
+
+### If we can compute whether
+#[fit] **ONE** **cell** 
+### is alive;
+### we can _extend_ it to 
+#[fit] **ALL CELLS**
+
+---
+
+#### 😮 wow 😲
+
+---
+
+## Our recipe needs the following ingredients:
+
+1. Whether the current cell is alive or dead
+
+2. Number of living neighbours
+
+
+---
+
+## Query to check the 
+#[fit]**Current cell**
+
+### any ideas?
+
+---
+
+#[fit] **EXTRACT**
+### ...NEXT
+
+---
+
+Number of living neighbours
+
+```haskell
+numLivingNeighbours :: Store (Sum Int, Sum Int) Bool
+                    -> Int
+```
+
+---
+
+## We need to check the 
+## **cells next door**
+
+---
+
+## Remember 
+# **Experiment**?
+
+```haskell
+experiment :: Functor f 
+           => (s -> f s) 
+           -> Store s a 
+           -> f a
+```
+
+---
+
+We can check our neighbours 
+all at once!
+
+---
+
+# Formulating our experiment
+
+```haskell
+neighbourLocations :: (Sum Int, Sum Int) -> [(Sum Int, Sum Int)]
+neighbourLocations location = mappend location <$> [
+     (-1, -1), (-1, 0), (-1, -1)
+   , (0,  -1),          (0,  1)
+   , (1,  -1), (1, 0),  (1,  1)
+]
+```
+
+---
+
+# Now to test our hypothesis:
+
+```haskell
+numLivingNeighbours :: Store (Sum Int, Sum Int) Bool -> Int
+numLivingNeighbours w = 
+    getSum . foldMap toCount . experiment neighbourLocations $ w
+  where
+    toCount :: Bool -> Sum Int
+    toCount False = Sum 0
+    toCount True = Sum 1
+```
+
+---
+
+# All set!
+
+---
+
+[.code-highlight: 1-6]
+[.code-highlight: all]
+
+```haskell
+checkCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
+checkCellAlive grid =
+    case (extract grid, numLivingNeighbours grid) of
+        (True, 2) -> True
+        (_,    3) -> True
+        _         -> False
+```
+
+---
+
+# [fit] Questions**?**
+
+---
+
+## Now we extend it to 
+#[fit] **all the cells**!
+
+---
+
+```haskell
 step :: Store (Sum Int, Sum Int) Bool
-     -> Store (Sum Int, Sum Int) Bool 
+     -> Store (Sum Int, Sum Int) Bool
+step = extend checkCellAlive
 ```
 
 ---
 
-# [fit] Live Coding
-### _what could_ **possibly** _go wrong???_
+#[fit] A note on performance
 
 ---
 
-[.code-highlight: 1-6]
-[.code-highlight: all]
-
-```haskell
-computeCellLiveness :: Grid -> Bool
-computeCellLiveness grid =
-    case (currentCellAlive, numLivingNeighbours) of
-        (True, 2) -> True
-        (_,    3) -> True
-        _         -> False
-  where
-    currentCellAlive :: Bool
-    currentCellAlive = ???
-
-    neighboursAlive :: Neighbours Bool
-    neighboursAlive = ???
-
-    numLivingNeighbours :: Int
-    numLivingNeighbours = ???
-```
+TODO add session printouts
 
 ---
 
-```haskell
-currentCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
-currentCellAlive grid = ???
-```
+EXTRAS
 
 ---
 
-```haskell
-currentCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
-currentCellAlive grid = extract grid
-```
+#[fit] `seek n`
+#[fit] `is kinda close to`
+#[fit] `extend ______`
 
 ---
 
-```haskell
-numLivingNeighbours :: Int
-numLivingNeighbours = ???
-```
+#[fit] `seek n`
+#[fit] `is kinda close to`
+#[fit] `extend ( peek n )`
 
 ---
 
-```haskell
-numLivingNeighbours :: Int
-numLivingNeighbours = length . filter id . toList $ neighboursAlive
-```
+#[fit] _How_
+#[fit] are they different?
 
 ---
-
-```haskell
-data Neighbours a =
-    Neighbours
-      a  a  a
-      a     a
-      a  a  a
-    deriving (Show, Eq, Functor, Foldable, Traversable)
-```
-
----
-
-```haskell
--- | Given a coordinate, compute all the neighbours of that position.
-neighbourLocations :: Coord -> Neighbours Coord
-neighbourLocations s = mappend s <$> Neighbours
-   (-1, -1) (0, -1) (1, -1)
-   (-1,  0)         (1,  0)
-   (-1,  1) (0,  1) (1,  1)
-```
-
----
-
-```haskell
-neighboursAlive :: Neighbours Bool
-neighboursAlive = experiment neighbourLocations grid
-```
-
----
-
-```haskell
-computeCellLiveness :: Grid -> Bool
-computeCellLiveness grid =
-    case (currentCellAlive, numLivingNeighbours) of
-        (True, 2) -> True
-        (_,    3) -> True
-        _         -> False
-  where
-    currentCellAlive :: Bool
-    currentCellAlive = extract grid
-    neighboursAlive :: Neighbours Bool
-    neighboursAlive = experiment neighbourLocations grid
-    numLivingNeighbours :: Int
-    numLivingNeighbours = length . filter id . toList $ neighboursAlive
-```
-
----
-
-# [fit] Questions**?**
-
----
-
-
-# Traced a.k.a. Co-Writer
-## `a.k.a. Monoid m => m -> a`
-
-```haskell
-newtype Traced m a = Traced (m -> a)
-    deriving Functor
-```
-
----
-# Traced
-
-```haskell
-instance (Monoid m) => Comonad (Traced m) where
-extract :: Traced m a -> a
-extract (Traced f) = f mempty
-```
-
----
-# Traced
-
-```haskell
-duplicate :: Traced m a 
-          -> Traced m (Traced m a)
-duplicate (Traced f) =
-    Traced $ \m -> Traced (f . mappend m)
-```
-
----
-# Traced
-
-```haskell
-extend :: (Traced m a -> b) 
-       -> Traced m a 
-       -> Traced m b
-extend g = fmap g . duplicate
-```
-
----
-
-# Traced
-
-```haskell
-trace :: m -> Traced m a -> a
-trace m (Traced f) = f m
-
-times10 :: Traced (Sum Int) Int
-times10 = traced (\(Sum n) -> n * 10 )
-
-λ> extract times10
-0
-λ> trace (Sum 5) times10
-50
-λ> extract $ times10 =>> trace (Sum 1) =>> trace (Sum 2)
-30
-```
-
----
-
-# EQUATIONAL REASONING
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: all]
-```haskell
-uppercase :: String -> String
-uppercase = fmap toUpper
-> trace "hi" (Traced uppercase)
--- definition of 'trace'
-> uppercase "hi"
--- apply uppercase
-> "HI"
-```
-
----
-
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: 1-5]
-[.code-highlight: 1-7]
-[.code-highlight: 1-9]
-[.code-highlight: all]
-```haskell
-> Traced uppercase =>> trace "hi"
--- definition of =>>
-> trace "hi" <$> (duplicate $ Traced uppercase) 
--- definition of duplicate
-> trace "hi" <$> (Traced $ \m -> Traced (uppercase . mappend m)) 
--- apply <$>
-> Traced $ \m -> trace "hi" (Traced (uppercase . mappend m))
--- apply 'trace'
-> Traced $ \m -> (uppercase . mappend m) "hi" 
-```
-
----
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: 1-5]
-[.code-highlight: 1-7]
-[.code-highlight: 1-9]
-[.code-highlight: all]
-```haskell
-> extract $ Traced id =>> trace "hi" =>> trace "!!"
--- Apply previous substitutions
-> extract $ Traced (\m -> (uppercase . mappend m) "hi") =>> trace "!!"
--- Cancel 'extract' with =>>
-> trace "!!" (Traced $ \m -> (uppercase . mappend m) "hi")
--- Apply 'trace'
-> (\m -> (uppercase . mappend m) "hi") "!!" 
--- Lambda substitution
-> (uppercase . mappend "!!") "hi"
--- Apply mappend
-> "!!HI"
-```
-
----
-
-# Traced Example
-
-```haskell
-exclamation :: Traced String String
-exclamation = traced (\s -> uppercase (s <> "!!"))
-
-λ> trace "hello" exclamation
-"HELLO!!"
-λ> extract $ exclamation =>> trace "hello"
-"HELLO!!"
-λ> extract $ exclamation =>> trace "jerry" =>> trace " " =>> trace "hello"
-"HELLO JERRY!!"
-```
-
----
-
-# Listen
-
-[.code-highlight: 1-2]
-[.code-highlight: 1-5]
-[.code-highlight: 1-8]
-[.code-highlight: all]
-
-```haskell
-listen :: Traced m a -> Traced m (a, m)
-listen (Traced f) = Traced $ \m -> (f m, m)
-
-t :: Traced [String] String
-t = traced (intercalate " AND A ")
-
-λ> trace ["one", "two"] $ listen t
-("one AND A two",["one","two"])
-λ> extract $ listen t =>> trace ["one"] =>> trace ["two"]
-("two AND A one",["two","one"])
-λ> extract $ listen (t =>> trace ["one"] =>> trace ["two"])
-("two AND A one",[])
-```
-
----
-
-# Traces
-
-[.code-highlight: 1-2]
-[.code-highlight: 1-5]
-[.code-highlight: 1-10]
-[.code-highlight: 1-13]
-[.code-highlight: all]
-
-```haskell
-traces :: Monoid m => (a -> m) -> Traced m a -> a
-traces f t = trace (f (extract t)) t
-
-t :: Traced (Sum Int) Ordering
-t = traced (\m -> compare m 10)
-
-homeIn :: Ordering -> Sum Int
-homeIn GT = Sum (-1)
-homeIn LT = Sum 1
-homeIn EQ = Sum 0
-
-λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst)
-(EQ,Sum {getSum = 11})
-
-λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst) =>> traces (homeIn . fst)
-(EQ,Sum {getSum = 10})
-```
-
-
----
-
-# Traced Intuition
-
-| **extract:** | Run the computation at my current location | 
-| ---: | :--- |
-| **extend:** | move to another location (relative) |
-| **trace** | What value is at this place near me? |
-| **traces** | Given the value at my location; decide which nearby value to look at |
-
----
-
-# [fit] Questions**?**
-
----
-
-
-# Example: Function Derivative
-
-![fit](./images/derivative/root-16.png)
-
----
-
-$$
-x^2 - 16
-$$
-
-![fit](./images/derivative/root-16.png)
-
----
-
-![fit](./images/derivative/root-16.png)
-
----
-
-
-```haskell
-rootSolver :: Double -> Traced (Sum Double) Double
-rootSolver n = Traced f
-  where
-    f :: Sum Double -> Double
-    f (Sum x) = (x^2) - n
-```
-
----
-
-$$
-x = 2 
-$$
-
-![fit](./images/derivative/derivative-point.png)
-
----
-
-![fit](./images/derivative/derivative-point.png)
-
----
-
-![fit](./images/derivative/derivative-context.png)
-
----
-
-![fit](./images/derivative/derivative.png)
-
----
-
-![fit](./images/derivative/derivative-plot.png)
-
----
-
-![ fill](./images/derivative/derivative-plot.png)
-
-![ fill](./images/derivative/derivative.png)
-
----
-
-# Live Coding?
-
----
-
-```haskell
-solveRoot16 :: Double -> Double
-solveRoot16 x = (x ^ (2 :: Integer)) - 16
-
-solveRoot16T :: Traced (Sum Double) Double
-solveRoot16T  = traced (solveRoot16 . getSum)
-```
-
----
-
-```haskell
-estimateDerivativeAtPosition :: Traced (Sum Double) Double
-                             -> Double
-estimateDerivativeAtPosition w =
-    let leftY = trace (Sum (-1)) w
-        rightY = trace (Sum 1) w
-     in (rightY - leftY) / 2
-```
-
----
-
-```haskell
-estimateDerivativeAtPositionReader :: Traced (Sum Double) Double
-                             -> Double
-estimateDerivativeAtPositionReader = do
-    leftY <- trace (Sum (-1))
-    rightY <- trace (Sum 1)
-    return $ (rightY - leftY) / 2
-```
-
----
-
-```haskell
-estimateDerivative :: Traced (Sum Double) Double
-                   -> Traced (Sum Double) Double
-estimateDerivative = extend estimateDerivativeAtPosition
-```
-
----
-
-```haskell
-withDerivative :: Traced (Sum Double) (Double, Double)
-withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
-```
-
----
-
-```haskell
-λ> extract withDerivative
-(-16.0,0.0)
-
-λ> trace (Sum 0) withDerivative
-(-16.0,0.0)
-
-λ> trace (Sum 1) withDerivative
-(-15.0,2.0)
-
-λ> trace (Sum 4) withDerivative
-(0.0,8.0)
-```
-
----
-
-# Example: Dependency Tracking
-
-```haskell
-ingredientsOf :: String -> S.Set String
-ingredientsOf "string"  = S.fromList ["wool"]
-ingredientsOf "sticks"  = S.fromList ["wood"]
-ingredientsOf "bow"     = S.fromList ["sticks", "string"]
-ingredientsOf "arrow"   = S.fromList ["sticks", "feather", "stone"]
-ingredientsOf "quiver"  = S.fromList ["arrow", "bow"]
-ingredientsOf "torches" = S.fromList ["coal", "sticks"]
-ingredientsOf _         = mempty
-
-recipes :: Traced (S.Set String) (S.Set String)
-recipes = traced (foldMap ingredientsOf)
-```
-
----
-
-```haskell
-string  -> wool
-sticks  -> wood
-bow     -> sticks, string
-arrow   -> sticks, feather, stone
-quiver  -> arrow, bow
-torches -> coal, sticks
-```
-
-[.code-highlight: 1-3]
-[.code-highlight: 1-6]
-[.code-highlight: all]
-```haskell
-λ> trace ["string"] recipes
-fromList ["wool"]
-
-λ> trace ["string", "torches"] recipes
-fromList ["coal","sticks","wool"]
-
-λ> extract $ recipes =>> trace ["torches"]
-fromList ["coal","sticks"]
-```
-
----
-
-```haskell
-string  -> wool
-sticks  -> wood
-bow     -> sticks, string
-arrow   -> sticks, feather, stone
-quiver  -> arrow, bow
-torches -> coal, sticks
-```
-
-[.code-highlight: 1-3]
-[.code-highlight: 1-6]
-[.code-highlight: all]
-
-```haskell
-λ> trace ["quiver"] $ recipes
-fromList ["arrows","bow"]
-
-λ> trace ["quiver"] $ recipes =>> traces id
-fromList ["arrows","bow","feathers","sticks","stone","string"]
-
-λ> trace ["quiver"] $ recipes =>> traces id =>> traces id
-fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
-```
-
----
-
-![inline](./images/dep-analysis/quiver.png)
-
----
-
-![inline](./images/dep-analysis/trace-quiver.png)
-
----
-
-![inline](./images/dep-analysis/traces-quiver.png)
-
-
---- 
-
-# [fit] Questions**?**

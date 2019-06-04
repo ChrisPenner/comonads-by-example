@@ -37,8 +37,8 @@ neighbourLocations s = mappend s <$> Neighbours
 -- OR
 -- * The cell has exactly 3 living neighbours
 -- OTHERWISE the cell is dead in the next iteration
-computeCellLiveness :: Grid -> Bool
-computeCellLiveness grid =
+checkCellAlive :: Grid -> Bool
+checkCellAlive grid =
     case (currentCellAlive, numLivingNeighbours) of
         (True, 2) -> True
         (_,    3) -> True
@@ -53,7 +53,7 @@ computeCellLiveness grid =
 
 -- | Iterate the game of life by one step
 step :: Grid -> Grid
-step = extend computeCellLiveness
+step = extend checkCellAlive
 
 -- | The starting state of the grid
 startingGrid :: Grid
