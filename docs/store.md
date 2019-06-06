@@ -12,7 +12,7 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 ^ code: auto(25)
 
 #[fit] **Abstract Comonads**
-#### *for when comonads aren't abstract enough*
+###[fit] *for when comonads aren't abstract enough*
 
 ---
 
@@ -132,8 +132,15 @@ class Functor w => Comonad w where
 ---
 
 #[fit] **`=>>`**
-## Runs
+## Constructs & Runs
 ##  a **chain** of **Queries**
+
+---
+
+##[fit] It takes a **Structure**
+## on the **left**
+##[fit] and a **Query**
+## on the **right**
 
 ---
 
@@ -163,6 +170,7 @@ class Functor w => Comonad w where
 λ> countStream =>> ix 2
 2 :> 3 :> 4 :> 5 :> 6 :> ...
 
+-- =>> is left associative!
 λ> countStream =>> ix 2 =>> ix 2
 4 :> 5 :> 6 :> 7 :> 8 :> ...
 
@@ -193,6 +201,13 @@ class Functor w => Comonad w where
 ### Co-Kleisli Composition 
 
 ```haskell
+(=>>) :: w a 
+      -> (w a -> b) 
+      -> w b
+```
+VS.
+
+```haskell
 (=>=) :: (w a -> b) -- Query 1
       -> (w b -> c) -- Query 2
       -> (w a -> c) -- Composed Queries
@@ -211,16 +226,6 @@ class Functor w => Comonad w where
 ---
 
 # [fit] Questions**?**
-
----
-
-# Store
-
-```haskell
-instance Comonad (Store s) where
-extract :: Store s a -> a
-extract (Store f s) = f s
-```
 
 ---
 
@@ -292,6 +297,16 @@ squared :: Store Int Int
 squared = 
   Store (\x -> x^2) -- The getter
         10          -- The current key
+```
+
+---
+
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
+```haskell
+squared :: Store Int Int
+squared = Store (\x -> x^2) 10
 
 λ> pos squared
 10
@@ -307,16 +322,15 @@ squared =
 
 #[fit] **PEEKS**
 #[fit] `peeks :: (s -> s) -> Store s a -> a`
-##[fit] Get a slot **relative**
-##[fit] To current **key**
+## Get a slot at a
+#[fit] **relative** position
+##[fit] To the current **key**
 
 ---
 
 ```haskell
-squared :: Store Int Int
-squared = 
-  Store (\x -> x^2) -- The getter
-        10          -- The current key
+λ> pos squared
+10
 
 λ> peeks (+2) squared
 144 -- (10 + 2)^2
@@ -327,12 +341,7 @@ squared =
 #[fit] **RELATIVE QUERIES**
 ### _like peeks_
 #[fit] Have different results
-#[fit] depending on the **view**
-
----
-
-#[fit] `ix 42`
-#[fit] is another **relative** query
+#[fit] depending on the current **view**
 
 ---
 
@@ -368,6 +377,9 @@ squared =
 
 # Store
 
+[.code-highlight: 1-3]
+[.code-highlight: 1-6]
+[.code-highlight: all]
 ```haskell
 λ> pos $ seek 5 squared
 5
@@ -384,7 +396,7 @@ squared =
 #[fit] **SEEKS**
 #[fit] `seeks :: (s -> s) -> Store s a -> Store s a`
 ##[fit] The **relative**
-#### version of
+### version of
 ##[fit] **seek**
 
 ---
@@ -395,11 +407,11 @@ squared =
 populations :: Map String Int
 populations =
     fromList [ ("Canada",        37279811)
-               , ("Poland",        38028278)
-               , ("France",        65480710)
-               , ("United States", 329093110)
-               , ("Germany",       82438639)
-               ]
+             , ("Poland",        38028278)
+             , ("France",        65480710)
+             , ("United States", 329093110)
+             , ("Germany",       82438639)
+             ]
 ```
 
 ---
@@ -432,8 +444,6 @@ Just 38028278
 ```
 
 ---
-
-# Store Example: Dictionary
 
 [.code-highlight: 1]
 [.code-highlight: 1-4]
@@ -472,12 +482,70 @@ popDefault :: Store String Int
 
 ---
 
-#[fit] Let's get
-#[fit] **A**b**s**t**r**a**c**t
+#[fit] Remember 
+## the 
+#[fit] **LAW**
+
+#[fit] `extract (duplicate w) == w`
 
 ---
 
-TODO duplicate
+#[fit] extending
+### an
+## **extraction query**
+#[fit] _s h i f t s_
+### slots
+
+---
+
+```haskell
+λ> pos squared
+10
+λ> extract squared
+100
+λ> peeks (+1) squared
+121
+```
+
+---
+
+```haskell
+shifted :: Store Int Int
+shifted = squared =>> peeks (+1)
+
+λ> peek 2 shifted
+9
+
+λ> peek 10 shifted
+121
+```
+
+---
+
+Note the difference:
+
+```haskell
+λ> pos shifted 
+10
+λ> extract shifted
+121
+VS.
+λ> pos $ seeks (+1) squared 
+11
+λ> extract $ seeks (+1) squared
+121
+```
+
+---
+
+# Duplicate
+## let's us write
+#[fit] **Function**
+#[fit] **Middleware**
+
+---
+
+
 
 ---
 
@@ -523,17 +591,6 @@ experiment :: Functor f
 
 ---
 
-# Store Example: Dictionary
-
-[.code-highlight: 1-3]
-[.code-highlight: all]
-
-```haskell
-λ> experiment (const ["Canada", "Poland", "Germany"]) popDefault
-[37279811, 38028278, 82438639]
-```
-
----
 # Store Example: Squared
 
 ```haskell
@@ -556,11 +613,8 @@ Nothing
 ```
 
 ---
-# Store Example: Squared
-
 [.code-highlight: 1-3]
 [.code-highlight: 1-5]
-[.code-highlight: 1-8]
 [.code-highlight: all]
 
 ```haskell
@@ -584,7 +638,7 @@ withN = squared =>> experiment (\n -> (show n, n))
 
 ```haskell
 shifted :: Store Int (String, Int)
-shifted = withN =>> (peeks (+10))
+shifted = withN =>> peeks (+10)
 
 λ> extract shifted
 ("20",400)
@@ -669,31 +723,26 @@ shifted = withN =>> (peeks (+10))
 
 [.code-highlight: 1-2]
 [.code-highlight: 1-5]
-[.code-highlight: 6-8]
-[.code-highlight: 9-13]
 [.code-highlight: all]
 
 ```haskell
-type Coord = (Sum Int, Sum Int)
-type Grid = Store Coord Bool
-
-startingGrid :: Grid
+startingGrid :: Store (Sum Int, Sum Int) Bool
 startingGrid = store checkAlive (0, 0)
   where
-    checkAlive :: Coord -> Bool
+    checkAlive :: (Sum Int, Sum Int) -> Bool
     checkAlive coord = S.member coord livingCells
 
-    livingCells :: S.Set Coord
+    livingCells :: S.Set (Sum Int, Sum Int)
     livingCells = S.fromList [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
 ```
 
 ---
 
 ```haskell
-λ> peek (0, 0) startingGrid
+λ> peek (Sum 0, Sum 0) startingGrid
 False
 
-λ> peek (1, 0) startingGrid
+λ> peek (Sum 1, Sum 0) startingGrid
 True
 
 λ> putStrLn . drawGrid 3 $ startingGrid
@@ -821,9 +870,6 @@ numLivingNeighbours w =
 
 ---
 
-[.code-highlight: 1-6]
-[.code-highlight: all]
-
 ```haskell
 checkCellAlive :: Store (Sum Int, Sum Int) Bool -> Bool
 checkCellAlive grid =
@@ -856,27 +902,38 @@ step = extend checkCellAlive
 
 ---
 
-TODO add session printouts
+#{fit] QUESTIONS?
 
 ---
 
-EXTRAS
+### Challenge A: Implement Comonad for Store
+
+```haskell
+instance Comonad (Store s) where
+  extract :: Store s a -> a
+
+  duplicate :: Store s a -> Store s (Store s a)
+
+  extend :: (Store s a -> b) -> Store s a -> Store s b
+```
+
+### Challenge B: Add a new ruleset for Conway's Game of Life
 
 ---
 
-#[fit] `seek n`
-#[fit] `is kinda close to`
-#[fit] `extend ______`
+END
 
 ---
 
-#[fit] `seek n`
-#[fit] `is kinda close to`
-#[fit] `extend ( peek n )`
+```haskell
+instance Comonad (Store s) where
+  extract :: Store s a -> a
+  extract (Store f s) = f s
 
----
+  duplicate :: Store s a -> Store s (Store s a)
+  duplicate (Store f s) =
+      Store (\s' -> Store f s') s
 
-#[fit] _How_
-#[fit] are they different?
-
----
+  extend :: (Store s a -> b) -> Store s a -> Store s b
+  extend g st = g <$> duplicate st
+```
