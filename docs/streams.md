@@ -199,7 +199,7 @@ countStream = fromList [0..]
 ---
 
 # Let's write some 
-##[fit] **Q**u**e**r**i**e**s**
+##[fit] **Queries**
 
 a.k.a. **Co**Effects[^**]
 

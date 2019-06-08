@@ -29,32 +29,33 @@ class Functor w => Comonad w where
 
 ---
 
-#[fit] Extraction
+#[fit] Selection
 #[fit] **Queries**
 
 ---
 
-# Extraction **Queries**
+# Selection **Queries**
 
 #[fit]`forall a. w a -> a`
 
 ---
 
-#[fit] Extraction **Queries**
+#[fit] Selection **Queries**
 ##[fit] Select a **slot**
+##[fit] No matter what's inside
 ### e.g. `ix 5`
 
 ---
 
-### **Running** an
-#[fit] **Extract**ion **Query**
+### **Running** a
+#[fit] **Selection** **Query**
 ### Retrieves the value from that 
 #[fit]**slot**
 
 ---
 
 ### **Extend**ing an
-#[fit] **Extract**ion **Query**
+#[fit] **Selection** **Query**
 #[fit] _rearranges_ 
 #[fit] **slot** positions
 
@@ -73,6 +74,7 @@ class Functor w => Comonad w where
 
 ---
 
+`forall a. Stream a -> a`
 
 ```haskell
 λ> duplicate countStream
@@ -90,7 +92,7 @@ class Functor w => Comonad w where
 
 ---
 
-#[fit] Non-extraction query
+#[fit] Not a selection query
 
 #[fit]`windowedAvg :: Int -> Stream Int -> Double`
 
@@ -111,11 +113,11 @@ class Functor w => Comonad w where
 λ> countStream
 0 :> 1 :> 2 :> 3 :> 4 :> ...
 
--- Running an extraction
+-- Running a selection
 λ> ix 5 countStream
 5
 
--- Extending an extraction
+-- Extending an selection
 λ> extend (ix 5) countStream
 5 :> 6 :> 7 :> 8 :> 9 :> ...
 ```
@@ -139,6 +141,7 @@ class Functor w => Comonad w where
 
 ##[fit] It takes a **Structure**
 ## on the **left**
+#[fit]`(=>>) :: w a -> (w a -> b) -> w b`
 ##[fit] and a **Query**
 ## on the **right**
 
@@ -159,7 +162,6 @@ class Functor w => Comonad w where
 
 [.code-highlight: 1-2]
 [.code-highlight: 1-5]
-[.code-highlight: 1-8]
 [.code-highlight: all]
 ```haskell
 (=>>) :: w a -> (w a -> b) -> w b
@@ -167,13 +169,10 @@ class Functor w => Comonad w where
 λ> countStream
 0 :> 1 :> 2 :> 3 :> 4 :> ...
 
-λ> countStream =>> ix 2
-2 :> 3 :> 4 :> 5 :> 6 :> ...
-
 -- =>> is left associative!
 λ> countStream =>> ix 2 =>> ix 2
+λ> (countStream =>> ix 2) =>> ix 2
 4 :> 5 :> 6 :> 7 :> 8 :> ...
-
 ```
 
 ---
@@ -240,6 +239,166 @@ VS.
 
 ---
 
+#[fit] **Warehouse**
+
+###[fit]Labeled **shelves** with **items**
+###[fit]**WELL STOCKED** (every shelf is occupied)
+###[fit]Forklift is always at a **shelf**
+
+![right](./images/store/warehouse.jpg) 
+
+---
+
+#[fit] **Warehouse**
+### Has an
+#[fit] **Inventory**
+### and a
+#[fit] **forklift**
+
+![right fit](./images/store/diagrams/warehouse.png)
+
+---
+
+#[fit] **Warehouse**
+#[fit]Actions
+
+---
+
+#[fit] **POS**
+## Asks which **shelf**
+## the **forklift** is at
+
+---
+
+#[fit]POS w
+#[fit]`=`
+#[fit]1
+
+![right fit](./images/store/diagrams/warehouse.png)
+
+---
+
+#[fit] **EXTRACT**
+## Gets the  **item**
+## at the current **shelf**
+
+---
+
+#[fit]Extract w
+#[fit]`=`
+#[fit]books
+![right fit](./images/store/diagrams/warehouse.png)
+
+---
+
+#[fit] **PEEK**
+##[fit] Gets the **item**
+#[fit] from a specific **shelf**
+
+---
+
+#[fit]peek 3 w
+#[fit]`=`
+#[fit]Laptops
+![right fit](./images/store/diagrams/warehouse.png)
+
+---
+
+#[fit] **PEEKS**
+## Gets the **item**
+#[fit] from a **shelf**
+#[fit] **relative** to current position
+
+---
+
+#[fit]peeks (+1) w
+#[fit]`=`
+#[fit]Guitars
+![right fit](./images/store/diagrams/warehouse.png)
+
+---
+
+# As Code:
+
+#[fit] `data Store s a = Store (s -> a) s`
+
+---
+
+# Warehouse Example
+
+```haskell
+inventory :: M.Map Int String
+inventory =
+    M.fromList [ (0, "Fidget spinners")
+               , (1, "Books")
+               , (2, "Guitars")
+               , (3, "Laptops")
+               ]
+```
+
+---
+
+```haskell
+λ> lookup 0 inventory
+Just "Fidget spinners"
+
+λ> lookup 42 inventory
+Nothing
+```
+
+---
+
+#[fit] Every key has a value
+
+![right fit](./images/store/diagrams/warehouse-nothing.png)
+
+---
+
+```haskell
+warehouse :: Store Int (Maybe String)
+warehouse = 
+  store (\shelf -> M.lookup shelf inventory) 1
+```
+
+---
+
+![right fit](./images/store/diagrams/warehouse.png)
+
+```haskell
+λ> pos warehouse
+1
+
+λ> peek 0 warehouse
+Just "Fidget Spinners"
+
+λ> peeks (+1) warehouse
+Just "Guitars"
+```
+
+---
+
+#[fit] **SEEK**
+##[fit] Moves the forklift
+##[fit] to a **specific** shelf
+
+---
+
+#[fit]seek 3 w
+![right fit](./images/store/diagrams/warehouse-seek-3.png)
+
+---
+
+#[fit] **SEEKS**
+##[fit] Moves the forklift
+##[fit] **relative** to current position
+
+---
+
+#[fit]seeks (+1) w
+![right fit](./images/store/diagrams/warehouse-seeks-1.png)
+
+---
+
 #[fit] Store 
 ### _a.k.a. Co-State_
 
@@ -247,12 +406,6 @@ VS.
 #[fit] A **view** from every _key_
 #[fit] **extract** the value at your _key_
 ![right](./images/store/warehouse.jpg) 
-
----
-
-### Store (a.k.a. Co-State)
-
-#[fit] `data Store s a = Store (s -> a) s`
 
 ---
 
@@ -288,7 +441,7 @@ VS.
 #[fit] `peek :: s -> Store s a -> a`
 ##[fit] extracts the **slot** at another **key**
 
-#### * Extraction Query!!
+#### * Selection Query!!
 
 ---
 
@@ -339,7 +492,7 @@ squared = Store (\x -> x^2) 10
 ---
 
 #[fit] **RELATIVE QUERIES**
-### _like peeks_
+## _like peeks_
 #[fit] Have different results
 #[fit] depending on the current **view**
 
@@ -401,98 +554,9 @@ squared = Store (\x -> x^2) 10
 
 ---
 
-# Store Example: Dictionary
-
-```haskell
-populations :: Map String Int
-populations =
-    fromList [ ("Canada",        37279811)
-             , ("Poland",        38028278)
-             , ("France",        65480710)
-             , ("United States", 329093110)
-             , ("Germany",       82438639)
-             ]
-```
-
----
-
-```haskell
-λ> lookup "Canada" populations
-Just 37279811
-
-λ> lookup "Wakanda" populations
-Nothing
-
-```
-
----
-
-```haskell
-countryPopulation :: Store String (Maybe Int)
-countryPopulation 
-  = store (\country -> lookup country populations) "Canada"
-```
-
----
-
-```haskell
-λ> pos countryPopulation
-"Canada"
-
-λ> peek "Poland" countryPopulation
-Just 38028278
-```
-
----
-
-[.code-highlight: 1]
-[.code-highlight: 1-4]
-[.code-highlight: 1-7]
-[.code-highlight: all]
-```haskell
-λ> popDefault = fmap (fromMaybe 0) countryPopulation
-
-λ> :t popDefault
-popDefault :: Store String Int
-
-λ> extract x
-37279811
-
-λ> peek "Wakanda" x
-0
-```
-
----
-
-#[fit] But like...
-#[fit] that's basically just a **function** right?
-#### _I'm not impressed so easily_
-
----
-
-#[fit] **Duplicate**
-##[fit] Puts the **getter** 
-## in each **slot**
-#[fit] with that **slot's key**
-
----
-
-#[fit] WUT?
-#[fit] 🐣
-
----
-
-#[fit] Remember 
-## the 
-#[fit] **LAW**
-
-#[fit] `extract (duplicate w) == w`
-
----
-
 #[fit] extending
-### an
-## **extraction query**
+### a
+## **selection query**
 #[fit] _s h i f t s_
 ### slots
 
@@ -535,6 +599,15 @@ VS.
 λ> extract $ seeks (+1) squared
 121
 ```
+
+---
+
+#Duplicate!
+
+---
+
+![fit left](./images/store/diagrams/warehouse.png)
+![fit right](./images/store/diagrams/warehouse-duplicate.png)
 
 ---
 
