@@ -260,7 +260,7 @@ VS.
 ---
 
 #[fit] **Warehouse**
-#[fit]Actions
+#[fit] Queries
 
 ---
 
@@ -554,73 +554,6 @@ squared = Store (\x -> x^2) 10
 
 ---
 
-#[fit] extending
-### a
-## **selection query**
-#[fit] _s h i f t s_
-### slots
-
----
-
-```haskell
-λ> pos squared
-10
-λ> extract squared
-100
-λ> peeks (+1) squared
-121
-```
-
----
-
-```haskell
-shifted :: Store Int Int
-shifted = squared =>> peeks (+1)
-
-λ> peek 2 shifted
-9
-
-λ> peek 10 shifted
-121
-```
-
----
-
-Note the difference:
-
-```haskell
-λ> pos shifted 
-10
-λ> extract shifted
-121
-VS.
-λ> pos $ seeks (+1) squared 
-11
-λ> extract $ seeks (+1) squared
-121
-```
-
----
-
-#Duplicate!
-
----
-
-![fit left](./images/store/diagrams/warehouse.png)
-![fit right](./images/store/diagrams/warehouse-duplicate.png)
-
----
-
-# Duplicate
-## let's us write
-#[fit] **Function**
-#[fit] **Middleware**
-
----
-
-
-
----
 
 #[fit] Experiment
 
@@ -975,7 +908,7 @@ step = extend checkCellAlive
 
 ---
 
-#{fit] QUESTIONS?
+#[fit] QUESTIONS?
 
 ---
 
@@ -1009,4 +942,96 @@ instance Comonad (Store s) where
 
   extend :: (Store s a -> b) -> Store s a -> Store s b
   extend g st = g <$> duplicate st
+```
+
+---
+
+Bonus
+
+---
+
+#[fit] extending
+### a
+## **selection query**
+#[fit] _s h i f t s_
+### slots
+
+---
+
+```haskell
+λ> pos squared
+10
+λ> extract squared
+100
+λ> peeks (+1) squared
+121
+```
+
+---
+
+```haskell
+shifted :: Store Int Int
+shifted = squared =>> peeks (+1)
+
+λ> peek 2 shifted
+9
+
+λ> peek 10 shifted
+121
+```
+
+---
+
+Note the difference:
+
+```haskell
+λ> pos shifted 
+10
+λ> extract shifted
+121
+VS.
+λ> pos $ seeks (+1) squared 
+11
+λ> extract $ seeks (+1) squared
+121
+```
+
+---
+
+# Duplicate!
+
+---
+
+![fit left](./images/store/diagrams/warehouse.png)
+![fit right](./images/store/diagrams/warehouse-duplicate.png)
+
+---
+
+# Extend
+## let's us write
+#[fit] **Function**
+#[fit] **Middleware**
+
+---
+
+```haskell
+-- Precompose
+normalizePath :: Store T.Text T.Text -> T.Text
+normalizePath = peeks cleaned
+  where
+    cleaned url = T.strip . T.toLower $ url
+
+-- Postcompose
+collapseSlashes :: Store T.Text T.Text -> T.Text
+collapseSlashes = T.replace "//" "/" . extract
+
+-- Wrapping transform
+showTransformation :: Store T.Text T.Text -> T.Text
+showTransformation w = pos w <> ": " <> extract w
+
+badUrl :: T.Text
+badUrl = " gOOgLe.com//a/B//c  "
+
+urlTransformer :: Store T.Text T.Text
+urlTransformer = store id "" =>> collapseSlashes =>> normalizePath =>> showTransformation
 ```
