@@ -29,6 +29,7 @@ dependencies:
 - distributive
 - streams
 - text
+- ordered-containers
 # - brick
 # - vty
 # - kan-extensions
