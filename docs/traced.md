@@ -57,15 +57,6 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
-# Traced
-
-```haskell
-extract :: Traced m a -> a
-extract (Traced f) = f mempty
-```
-
----
-
 #[fit] **`m -> a`**
 #[fit] is only a comonad
 #[fit] when _m_ is a Monoid
@@ -76,6 +67,27 @@ extract (Traced f) = f mempty
 #[fit] **Queries**
 
 ---
+
+```haskell
+extract :: Traced m a -> a
+extract (Traced f) = f mempty
+```
+
+---
+
+```haskell
+λ> :t sum
+sum :: [Int] -> Int
+
+λ> let adder = traced sum
+adder :: Traced [Int] Int
+
+λ> extract adder -- a.k.. sum []
+0
+```
+
+---
+
 
 #[fit] Trace
 #[fit] **applies** the function 
@@ -90,16 +102,7 @@ extract (Traced f) = f mempty
 ---
 
 ```haskell
-λ> :t sum
-sum :: [Int] -> Int
-
-λ> let adder = Traced sum
-adder :: Traced [Int] Int
-
-λ> extract adder
-0
-
-λ> trace [1,2,3] adder
+λ> trace [1,2,3] adder -- a.k.a. sum [1,2,3]
 6
 ```
 
@@ -114,23 +117,219 @@ adder :: Traced [Int] Int
 
 ```haskell
 λ> let adder' = adder =>> trace [1,2,3]
-adder :: Traced [Int] Int
+adder' :: Traced [Int] Int
 
-λ> extract adder'
+λ> extract adder' -- a.k.a. sum (mempty <> [1,2,3])
 6
 
-λ> trace [10] adder'
+λ> trace [10] adder' -- a.k.a. sum ([10] <> [1,2,3])
 16
 ```
 
 ---
 
 ```haskell
-λ> let builder = traced concat
-builder :: Traced [String] -> String
+newBuilder :: Traced [String] String
+newBuilder = traced concat
 
-e
+logMsg :: Traced [String] String -> String
+logMsg = trace ["hello "] =>= trace ["world"]
+
+-- Uh Oh!
+-- λ> logMsg newBuilder
+-- "worldhello "
 ```
+
+---
+
+#[fit] Trace always
+#[fit] **prepends**
+#[fit] new elements
+
+---
+
+# [fit] Questions**?**
+
+---
+
+#[fit] Traced
+
+#[fit] Your position is **implicit**
+#[fit] **trace** moves relatively
+#[fit] you can look **nearby** 
+#[fit] extending **trace** moves you
+
+![right](./images/traced/fork.jpg)
+
+---
+
+# Example: Function Derivative
+
+![fit](./images/derivative/root-16.png)
+
+---
+
+# A derivative is a **contextual** calculation
+
+---
+
+## The derivative at a given point is dependant on 
+## the **nearby** values
+
+---
+
+# We can roughly **estimate**
+
+$$
+f'(x) = \frac{f(x + 1) - f(x - 1)}{2}
+$$
+
+
+
+---
+
+$$
+x^2 - 16
+$$
+
+![fit](./images/derivative/root-16.png)
+
+---
+
+![fit](./images/derivative/root-16.png)
+
+---
+
+$$
+x = 2 
+$$
+
+![fit](./images/derivative/derivative-point.png)
+
+---
+
+![fit](./images/derivative/derivative-point.png)
+
+---
+
+![fit](./images/derivative/derivative-context.png)
+
+---
+
+![fit](./images/derivative/derivative.png)
+
+---
+
+![fit](./images/derivative/derivative-plot.png)
+
+---
+
+```haskell
+-- Solution for the sqrt of 16
+func :: Sum Double -> Double
+func (Sum x) = (x ^ (2 :: Integer)) - 16
+
+f :: Traced (Sum Double) Double
+f  = traced func
+```
+
+---
+
+```haskell
+λ> extract f -- f (Sum 0)
+-16.0
+λ> trace (Sum 2) f
+-12.0
+λ> trace (Sum 6) f
+20.0
+λ> trace (Sum 4) f
+0.0
+```
+
+---
+
+#[fit] We can write a **query**
+### to estimate `f'`
+#[fit] at a single position
+
+---
+
+#[fit] `estimateDerivative`
+#[fit] `:: Traced (Sum Double) Double -> Double`
+
+---
+
+```haskell
+estimateDerivative :: Traced (Sum Double) Double
+                   -> Double
+estimateDerivative w =
+    let leftY = trace (Sum (-1)) w
+        rightY = trace (Sum 1) w
+     in (rightY - leftY) / 2
+```
+
+---
+
+```haskell
+estimateDerivativeReader :: Traced (Sum Double) Double
+                         -> Double
+estimateDerivativeReader = do
+    leftY <- trace (Sum (-1))
+    rightY <- trace (Sum 1)
+    return $ (rightY - leftY) / 2
+```
+
+---
+
+#[fit] If we estimate `f'`
+#[fit] at **ALL** positions
+#[fit] We estimate the whole function!
+
+---
+
+```haskell
+estimateDerivative :: Traced (Sum Double) Double
+                   -> Traced (Sum Double) Double
+estimateDerivative = extend estimateDerivativeAtPosition
+```
+
+---
+
+#[fit] Comonads have **`liftW2`**
+#[fit] like `liftA2`
+#[fit] But always **zippy**
+
+
+---
+
+#[fit] If a **Comonad**
+#[fit] is also **Applicative**
+#[fit] `liftW2 == liftA2`
+
+---
+
+```haskell
+withDerivative :: Traced (Sum Double) (Double, Double)
+withDerivative = liftW2 (,) f (estimateDerivative f)
+```
+
+---
+
+```haskell
+λ> extract withDerivative
+(-16.0, 0.0)
+
+λ> trace (Sum 0) withDerivative
+(-16.0, 0.0)
+
+λ> trace (Sum 1) withDerivative
+(-15.0, 2.0)
+
+λ> trace (Sum 4) withDerivative
+(0.0, 8.0)
+```
+
+![right fit](./images/derivative/root-16.png)
 
 ---
 
@@ -151,101 +350,6 @@ extend :: (Traced m a -> b)
        -> Traced m a 
        -> Traced m b
 extend g = fmap g . duplicate
-```
-
----
-
-# Traced
-
-```haskell
-trace :: m -> Traced m a -> a
-trace m (Traced f) = f m
-
-times10 :: Traced (Sum Int) Int
-times10 = traced (\(Sum n) -> n * 10 )
-
-λ> extract times10
-0
-λ> trace (Sum 5) times10
-50
-λ> extract $ times10 =>> trace (Sum 1) =>> trace (Sum 2)
-30
-```
-
----
-
-# EQUATIONAL REASONING
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: all]
-```haskell
-uppercase :: String -> String
-uppercase = fmap toUpper
-> trace "hi" (Traced uppercase)
--- definition of 'trace'
-> uppercase "hi"
--- apply uppercase
-> "HI"
-```
-
----
-
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: 1-5]
-[.code-highlight: 1-7]
-[.code-highlight: 1-9]
-[.code-highlight: all]
-```haskell
-> Traced uppercase =>> trace "hi"
--- definition of =>>
-> trace "hi" <$> (duplicate $ Traced uppercase) 
--- definition of duplicate
-> trace "hi" <$> (Traced $ \m -> Traced (uppercase . mappend m)) 
--- apply <$>
-> Traced $ \m -> trace "hi" (Traced (uppercase . mappend m))
--- apply 'trace'
-> Traced $ \m -> (uppercase . mappend m) "hi" 
-```
-
----
-
-[.code-highlight: 1]
-[.code-highlight: 1-3]
-[.code-highlight: 1-5]
-[.code-highlight: 1-7]
-[.code-highlight: 1-9]
-[.code-highlight: all]
-```haskell
-> extract $ Traced id =>> trace "hi" =>> trace "!!"
--- Apply previous substitutions
-> extract $ Traced (\m -> (uppercase . mappend m) "hi") =>> trace "!!"
--- Cancel 'extract' with =>>
-> trace "!!" (Traced $ \m -> (uppercase . mappend m) "hi")
--- Apply 'trace'
-> (\m -> (uppercase . mappend m) "hi") "!!" 
--- Lambda substitution
-> (uppercase . mappend "!!") "hi"
--- Apply mappend
-> "!!HI"
-```
-
----
-
-# Traced Example
-
-```haskell
-exclamation :: Traced String String
-exclamation = traced (\s -> uppercase (s <> "!!"))
-
-λ> trace "hello" exclamation
-"HELLO!!"
-λ> extract $ exclamation =>> trace "hello"
-"HELLO!!"
-λ> extract $ exclamation =>> trace "jerry" =>> trace " " =>> trace "hello"
-"HELLO JERRY!!"
 ```
 
 ---
@@ -274,178 +378,17 @@ t = traced (intercalate " AND A ")
 
 ---
 
-# Traces
-
-[.code-highlight: 1-2]
-[.code-highlight: 1-5]
-[.code-highlight: 1-10]
-[.code-highlight: 1-13]
-[.code-highlight: all]
-
-```haskell
-traces :: Monoid m => (a -> m) -> Traced m a -> a
-traces f t = trace (f (extract t)) t
-
-t :: Traced (Sum Int) Ordering
-t = traced (\m -> compare m 10)
-
-homeIn :: Ordering -> Sum Int
-homeIn GT = Sum (-1)
-homeIn LT = Sum 1
-homeIn EQ = Sum 0
-
-λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst)
-(EQ,Sum {getSum = 11})
-
-λ> trace 12 $ listen t =>> traces (homeIn . fst) =>> traces (homeIn . fst) =>> traces (homeIn . fst)
-(EQ,Sum {getSum = 10})
-```
-
-
----
-
-# Traced Intuition
-
-| **extract:** | Run the computation at my current location | 
-| ---: | :--- |
-| **extend:** | move to another location (relative) |
-| **trace** | What value is at this place near me? |
-| **traces** | Given the value at my location; decide which nearby value to look at |
-
----
-
 # [fit] Questions**?**
 
 ---
 
-
-# Example: Function Derivative
-
-![fit](./images/derivative/root-16.png)
+#[fit] Dependency Tracking
 
 ---
 
-$$
-x^2 - 16
-$$
-
-![fit](./images/derivative/root-16.png)
+![inline](./images/dep-analysis/quiver.png)
 
 ---
-
-![fit](./images/derivative/root-16.png)
-
----
-
-
-```haskell
-rootSolver :: Double -> Traced (Sum Double) Double
-rootSolver n = Traced f
-  where
-    f :: Sum Double -> Double
-    f (Sum x) = (x^2) - n
-```
-
----
-
-$$
-x = 2 
-$$
-
-![fit](./images/derivative/derivative-point.png)
-
----
-
-![fit](./images/derivative/derivative-point.png)
-
----
-
-![fit](./images/derivative/derivative-context.png)
-
----
-
-![fit](./images/derivative/derivative.png)
-
----
-
-![fit](./images/derivative/derivative-plot.png)
-
----
-
-![ fill](./images/derivative/derivative-plot.png)
-
-![ fill](./images/derivative/derivative.png)
-
----
-
-# Live Coding?
-
----
-
-```haskell
-solveRoot16 :: Double -> Double
-solveRoot16 x = (x ^ (2 :: Integer)) - 16
-
-solveRoot16T :: Traced (Sum Double) Double
-solveRoot16T  = traced (solveRoot16 . getSum)
-```
-
----
-
-```haskell
-estimateDerivativeAtPosition :: Traced (Sum Double) Double
-                             -> Double
-estimateDerivativeAtPosition w =
-    let leftY = trace (Sum (-1)) w
-        rightY = trace (Sum 1) w
-     in (rightY - leftY) / 2
-```
-
----
-
-```haskell
-estimateDerivativeAtPositionReader :: Traced (Sum Double) Double
-                             -> Double
-estimateDerivativeAtPositionReader = do
-    leftY <- trace (Sum (-1))
-    rightY <- trace (Sum 1)
-    return $ (rightY - leftY) / 2
-```
-
----
-
-```haskell
-estimateDerivative :: Traced (Sum Double) Double
-                   -> Traced (Sum Double) Double
-estimateDerivative = extend estimateDerivativeAtPosition
-```
-
----
-
-```haskell
-withDerivative :: Traced (Sum Double) (Double, Double)
-withDerivative = liftW2 (,) solveRoot16T (estimateDerivative solveRoot16T)
-```
-
----
-
-```haskell
-λ> extract withDerivative
-(-16.0,0.0)
-
-λ> trace (Sum 0) withDerivative
-(-16.0,0.0)
-
-λ> trace (Sum 1) withDerivative
-(-15.0,2.0)
-
-λ> trace (Sum 4) withDerivative
-(0.0,8.0)
-```
-
----
-
-# Example: Dependency Tracking
 
 ```haskell
 ingredientsOf :: String -> S.Set String
@@ -455,6 +398,7 @@ ingredientsOf "bow"     = S.fromList ["sticks", "string"]
 ingredientsOf "arrow"   = S.fromList ["sticks", "feather", "stone"]
 ingredientsOf "quiver"  = S.fromList ["arrow", "bow"]
 ingredientsOf "torches" = S.fromList ["coal", "sticks"]
+-- Everything else has no dependencies
 ingredientsOf _         = mempty
 
 recipes :: Traced (S.Set String) (S.Set String)
@@ -464,12 +408,12 @@ recipes = traced (foldMap ingredientsOf)
 ---
 
 ```haskell
-string  -> wool
-sticks  -> wood
-bow     -> sticks, string
-arrow   -> sticks, feather, stone
 quiver  -> arrow, bow
+arrow   -> sticks, feather, stone
+bow     -> sticks, string
 torches -> coal, sticks
+sticks  -> wood
+string  -> wool
 ```
 
 [.code-highlight: 1-3]
@@ -482,19 +426,22 @@ fromList ["wool"]
 λ> trace ["string", "torches"] recipes
 fromList ["coal","sticks","wool"]
 
-λ> extract $ recipes =>> trace ["torches"]
+λ> recipes =>> trace ["torches"]
 fromList ["coal","sticks"]
+
+λ> recipes & (trace ["string", "torches"] =>= trace ["sticks"])
+fromList ["coal","sticks","wood","wool"]
 ```
 
 ---
 
 ```haskell
-string  -> wool
-sticks  -> wood
-bow     -> sticks, string
-arrow   -> sticks, feather, stone
 quiver  -> arrow, bow
+arrow   -> sticks, feather, stone
+bow     -> sticks, string
 torches -> coal, sticks
+sticks  -> wood
+string  -> wool
 ```
 
 [.code-highlight: 1-3]
