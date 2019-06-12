@@ -203,16 +203,4 @@ dataDef _ = 0
 
 ---
 
-```haskell
-dataDef :: (Char, Int) -> Double
-dataDef ('A', 0) = 1
-dataDef ('A', 1) = 0.75
-dataDef ('A', 2) = 2
-
-dataDef ('B', 0) = 7
-dataDef ('B', 1) = 5
-dataDef ('B', 2) = 9
-dataDef _ = 0
-```
-
 ![fit right](./images/spreadsheets/item-cost.png)
