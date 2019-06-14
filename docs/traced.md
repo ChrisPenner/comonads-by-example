@@ -288,9 +288,9 @@ estimateDerivativeReader = do
 ---
 
 ```haskell
-estimateDerivative :: Traced (Sum Double) Double
+derive :: Traced (Sum Double) Double
                    -> Traced (Sum Double) Double
-estimateDerivative = extend estimateDerivativeAtPosition
+derive = extend estimateDerivative
 ```
 
 ---
@@ -310,7 +310,7 @@ estimateDerivative = extend estimateDerivativeAtPosition
 
 ```haskell
 withDerivative :: Traced (Sum Double) (Double, Double)
-withDerivative = liftW2 (,) f (estimateDerivative f)
+withDerivative = liftW2 (,) f (derive f)
 ```
 
 ---
@@ -330,51 +330,6 @@ withDerivative = liftW2 (,) f (estimateDerivative f)
 ```
 
 ![right fit](./images/derivative/root-16.png)
-
----
-
-# Traced
-
-```haskell
-duplicate :: Traced m a 
-          -> Traced m (Traced m a)
-duplicate (Traced f) =
-    Traced $ \m -> Traced (f . mappend m)
-```
-
----
-# Traced
-
-```haskell
-extend :: (Traced m a -> b) 
-       -> Traced m a 
-       -> Traced m b
-extend g = fmap g . duplicate
-```
-
----
-
-# Listen
-
-[.code-highlight: 1-2]
-[.code-highlight: 1-5]
-[.code-highlight: 1-8]
-[.code-highlight: all]
-
-```haskell
-listen :: Traced m a -> Traced m (a, m)
-listen (Traced f) = Traced $ \m -> (f m, m)
-
-t :: Traced [String] String
-t = traced (intercalate " AND A ")
-
-λ> trace ["one", "two"] $ listen t
-("one AND A two",["one","two"])
-λ> extract $ listen t =>> trace ["one"] =>> trace ["two"]
-("two AND A one",["two","one"])
-λ> extract $ listen (t =>> trace ["one"] =>> trace ["two"])
-("two AND A one",[])
-```
 
 ---
 
@@ -426,7 +381,7 @@ fromList ["wool"]
 λ> trace ["string", "torches"] recipes
 fromList ["coal","sticks","wool"]
 
-λ> recipes =>> trace ["torches"]
+λ> recipes & trace ["torches"]
 fromList ["coal","sticks"]
 
 λ> recipes & (trace ["string", "torches"] =>= trace ["sticks"])

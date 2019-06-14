@@ -7,7 +7,6 @@ import Control.Arrow
 import Comonads.Transformers.Iter
 import Data.Function
 import Control.Comonad.Env
-import Debug.Trace
 
 -- https://en.wikipedia.org/wiki/Newton%27s_method#Square_root_of_a_number
 
@@ -40,7 +39,7 @@ solveNewton = fixPointWithinDelta 0.0000001 newtonStep
 solveNewtonCount :: EnvT Int (Store Double) (Double, Double) -> EnvT Int (Store Double) (Double, Double)
 solveNewtonCount = fixPointWithinDelta 0.0000001 (local (+1) . newtonStep)
 
-
+-- Given a function alongside its derivative, solve for a root
 newtonFix :: Double -> Store Double (Double, Double) -> Double
 newtonFix delta w = wfix (extend go w)
   where

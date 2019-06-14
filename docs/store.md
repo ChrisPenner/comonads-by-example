@@ -946,6 +946,13 @@ instance Comonad (Store s) where
 
 ---
 
+
+##[fit] `chrispenner.ca`
+##[fit] `github.com/ChrisPenner`
+##[fit] `🐦 @ChrisLPenner`
+
+---
+
 Bonus
 
 ---

@@ -39,10 +39,6 @@ data Cofree f a = a :< f (Cofree f a)
 
 ---
 
-TODO: DIAGRAM OF Cofree Tree
-
----
-
 Let's look at some comonads we've already seen
 
 ---
@@ -358,6 +354,12 @@ zipper = unfold move ([-1, -2], 0, [1, 2])
     toLeft (l:ls, focus, rs) = Just (ls, l, focus:rs)
     toLeft ([], _, _) = Nothing
 ```
+
+---
+
+end
+
+---
 
 ---
 

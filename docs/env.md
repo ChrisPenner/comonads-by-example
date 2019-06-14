@@ -15,6 +15,18 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
+
+
+---
+
+![inline](./images/wire.png)
+
+`Hiring haskell devs/devops`
+
+`wire.com/jobs`
+
+---
+
 # Env
 
 #[fit] Has a single **slot**

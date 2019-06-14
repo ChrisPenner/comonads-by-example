@@ -11,11 +11,34 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 ^ text-strong: #FF5481
 ^ code: auto(25)
 
-# Comonad Fix!
+#[fit] Comonad **Fix**!
+### _The truth was inside you all along_
 
-```haskell
-wfix :: Comonad w => w (w a -> a) -> a
-```
+---
+
+#[fit]Given the **answer**
+#[fit]compute the **answer**
+
+####seriously Haskell WTF?
+
+---
+
+#[fit]`wfix :: w (w a -> a) -> a `
+
+---
+
+##[fit] Given a **comonad**
+##[fit] Filled with 
+##[fit]**queries over the final result**
+
+---
+
+##[fit] resolve them all **using** the result
+##[fit] to **get** the result
+
+---
+
+![fit](./images/fix/mind-blown.gif)
 
 ---
 
@@ -32,6 +55,8 @@ wfix :: Comonad w => w (w a -> a) -> a
 # Factorial
 
 ```haskell
+-- The FUNCTION is the context 
+-- which we can use in the computation
 let fact 0 = 1
     fact n = n * fact (n -1)
 
@@ -41,32 +66,25 @@ let fact 0 = 1
 
 ---
 
+#[fit] Note how `fact 0 = 1`
+#[fit] **DOESN'T** reference the **context**
+###_a.k.a. it doesn't recurse_
+
+---
+
 # Factorial
 
 ```haskell
-factorialStore :: Store Int Int
-factorialStore = extend wfix (store go 0)
-    where
-      go :: Int -> (Store Int Int -> Int)
-      go 0 _ = 1
-      go n w = n * peek (n - 1) w
+factorialTraced :: Traced (Sum Int) Int
+factorialTraced = extend wfix (traced go)
+  where
+    go :: Sum Int -> Traced (Sum Int) Int -> Int
+    go (Sum 0) _ = 1
+    go (Sum n) t = n * trace (-1) t
 ```
 
 ---
 
-
-
--- | Sum of current and following numbers at each position
--- λ> sums (NE.fromList [1,2,3,4])
--- 10 :| [9,7,4]
-sums :: NE.NonEmpty Int -> NE.NonEmpty Int
-sums w = extend wfix (go <$> w)
-  where
-    go :: Int -> NE.NonEmpty Int -> Int
-    go n (_ NE.:| []) = n
-    go n (_ NE.:| (x:_)) = n + x
-
----
 
 # Example: Dependency Tracking
 
@@ -196,11 +214,39 @@ dataDef ('B', 4) = 2
 dataDef ('C', 2) = 7
 dataDef ('C', 3) = 5
 dataDef ('C', 4) = 9
+
+dataDef2 ('D',  row) = ???
+
 dataDef _ = 0
 ```
 
-![fit right](./images/spreadsheets/example-spreadsheet.png)
+![fit right](./images/spreadsheets/item-cost.png)
 
 ---
 
+```haskell
+dataDef2 ('D',  row) w | row < 6 =
+  let price = peek ('B', row) w
+      quant = peek ('C', row) w
+   in price * quant
+```
+
 ![fit right](./images/spreadsheets/item-cost.png)
+
+---
+
+```haskell
+getCells :: Functor f => f s -> Store s a -> f a
+getCells cells w = experiment (const cells) w
+
+-- Tax
+dataDef2 ('D', 6) _ = 0.15
+-- Total
+dataDef2 ('D', 7) w = sum . getCells (('D',) <$> [1..5]) $ w
+-- Total With Tax
+dataDef2 ('D', 8) w =
+    let tax = peek ('D', 6) w
+        total = peek ('D', 7) w
+     in (tax * total) + total
+```
+

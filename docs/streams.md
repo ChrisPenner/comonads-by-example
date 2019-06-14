@@ -17,17 +17,27 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
+![inline](./images/wire.png)
+
+`Hiring haskell devs/devops`
+
+`wire.com/jobs`
+
+---
+
 # Outline
 
 ```
-1. Session 1
-    1. Overview of Comonads
-    2. Streams
-    3. *BREAK*
+* Session 1 & 2
+    1. Comonads using streams and queries
+    2. Store Comonad
 
-1. Session 2
-    1. Store
+* Session 3 & 4
+    1. Env Comonad & Comonad Transformers
+    2. Traced Comonad
+    3. Comonad Fix (Bonus)
 ```
+
 
 ---
 
@@ -936,11 +946,6 @@ rollingAvg  :: Int -> Stream Int -> Stream Double
 λ> extend (windowedAvg 3) countStream
 1.0 :> 2.0 :> 3.0 :> 4.0 :> 5.0 :> ...
 ```
-
----
-
-
-![fit](./images/questions/any-questions-dwight.gif)
 
 ---
 
