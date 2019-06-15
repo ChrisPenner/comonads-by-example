@@ -181,7 +181,7 @@ class Functor w => Comonad w where
 λ> countStream =>> ix 2 =>> takeS 3
 [3,4,5] :> [4,5,6] :> [5,6,7] :> [6,7,8] :> [7,8,9] :> ...
 
-λ> extract $ countStream =>> ix 2 =>> takeS 3
+λ> countStream =>> ix 2 =>> takeS 3 & extract
 [3,4,5]
 ```
 

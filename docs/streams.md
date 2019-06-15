@@ -535,6 +535,11 @@ dropS n s = ix n (duplicate s)
 
 ---
 
+##[fit] Anything you want to 
+##[fit]**try**?
+
+---
+
 ![](./images/flavour/theres-more.gif)
 
 ---

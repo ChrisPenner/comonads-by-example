@@ -15,10 +15,6 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
-
-
----
-
 ![inline](./images/wire.png)
 
 `Hiring haskell devs/devops`
@@ -250,6 +246,8 @@ Mutations aren't so interesting for Env
 But we want to carry our context
 through a series of computations
 
+Just like **Reader**
+
 ---
 
 # Remember `(=>=)`
@@ -317,6 +315,8 @@ pipeline3 = trunc =>= pad . local (setPadChar '_') =>= pad
 
 #[fit] Questions?
 
+#[fit] Or want to **try** something?
+
 ---
 
 Bonus
@@ -326,7 +326,7 @@ Bonus
 ---
 
 #[fit] All our queries happen on the same 
-#[fit] Object
+#[fit] **Object**
 
 ---
 
@@ -343,6 +343,12 @@ pad2 = do
   let padding = replicate padAmt c 
   return $ padding <> txt <> padding
 ```
+
+---
+
+#[fit] **Reader** Actions
+#[fit] are **queries**
+#[fit] over **Env**
 
 ---
 
@@ -366,3 +372,10 @@ pad3 = do
   let padding = replicate <$> asks padAmount <*> asks padChar
   padding <> extract <> padding
 ```
+
+---
+
+#[fit] Comonad
+#[fit] Transformers
+
+

@@ -29,5 +29,6 @@ dependencies:
 - distributive
 - streams
 - text
+- mtl
 library:
   source-dirs: src
