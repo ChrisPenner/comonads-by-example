@@ -1,12 +1,12 @@
-module Comonads.Transformers.Other where
+module Comonads.Transformers.ReportBuilder where
 
 import Control.Comonad
 import Control.Comonad.Store
 import Control.Comonad.Env
 import Control.Comonad.Traced
-import Data.Function ((&))
 import Data.Functor.Compose
 import Control.Arrow
+import Control.Applicative
 
 data Region = America | UK | Germany
     deriving (Show, Eq, Ord)
@@ -25,7 +25,10 @@ reportPipeline :: (ComonadTraced (Sum Int) w, ComonadStore Region w, ComonadEnv 
 reportPipeline = buildReport =>= addHeader
 
 fullComparison :: (ComonadTraced (Sum Int) w, ComonadStore Region w, ComonadEnv ReportStyle w) => w Double -> String
-fullComparison = buildReport =>= addHeader
+fullComparison = do
+    ourReport <- buildReport
+    comparisons <- comparisonReport
+    return $ ourReport <> "\n" <> replicate 40 '=' <> "\n" <> comparisons
 
 currencyOf :: Region -> String
 currencyOf America = "$"
@@ -41,7 +44,7 @@ buildReport = do
     style <- ask
     pure $ case style of
         Summary  -> show region <> ": did well with " <> currencyOf region <> show salesAmt
-        Detailed -> "This years report for "
+        Detailed -> "This months report for "
             <> show region
             <> " shows that they made some sort of sales as shown by the total "
             <> currencyOf region

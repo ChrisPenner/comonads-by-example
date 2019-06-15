@@ -372,10 +372,3 @@ pad3 = do
   let padding = replicate <$> asks padAmount <*> asks padChar
   padding <> extract <> padding
 ```
-
----
-
-#[fit] Comonad
-#[fit] Transformers
-
-
