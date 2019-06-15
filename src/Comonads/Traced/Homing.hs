@@ -2,8 +2,6 @@ module Comonads.Traced.Homing where
 
 import Comonads.Traced
 import Data.Monoid
-import Control.Comonad
-import qualified Debug.Trace as Debug
 
 data Distance = WayTooLow | TooLow | JustRight | TooHigh | WayTooHigh
     deriving Show

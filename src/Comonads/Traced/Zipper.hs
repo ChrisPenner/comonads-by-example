@@ -3,15 +3,17 @@ module Comonads.Traced.Zipper where
 import Comonads.Zipper
 import Comonads.Traced
 import Control.Comonad
+import Data.Monoid
 
 data Dir = L | R
     deriving (Show, Eq)
 
-z :: Zipper Int
-z = fromList [1,2,3,4,5]
+zipper :: Zipper Int
+zipper = fromList [1,2,3,4,5]
 
-tz :: Zipper a -> Traced [Dir] a
-tz zipper = traced (extract . follow zipper)
+-- Navigate
+tZipper :: Zipper a -> Traced (Dual [Dir]) a
+tZipper z = traced (extract . follow z . getDual)
   where
     follow :: Zipper a -> [Dir] -> Zipper a
     follow z' [] = z'

@@ -29,14 +29,5 @@ dependencies:
 - distributive
 - streams
 - text
-- ordered-containers
-# - brick
-# - vty
-# - kan-extensions
-# - text
-# - mtl
-# - grids
-# - lens
-# - recursion-schemes
 library:
   source-dirs: src

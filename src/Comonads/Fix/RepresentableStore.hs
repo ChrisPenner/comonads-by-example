@@ -6,6 +6,8 @@ import Control.Comonad.Representable.Store
 import Data.Function (fix)
 import Debug.Trace
 
+-- Here we observe that using a Representable structure as our Comonad Backing gives us
+-- 'caching'; however only on a single value basis
 factorialStreamW :: Store Stream Int
 factorialStreamW = extend wfix $ store (flip go) 0
   where
@@ -13,6 +15,8 @@ factorialStreamW = extend wfix $ store (flip go) 0
     go w n = trace ("executing: " <> show n) n * peek (n - 1) w
 
 
+-- If we manually use 'fix' we get even BETTER sharing; it'll only calculate each value
+-- exactly once
 factorialStreamF :: Store Stream Int
 factorialStreamF = fix $ \result -> store (go result) 0
   where
@@ -20,9 +24,6 @@ factorialStreamF = fix $ \result -> store (go result) 0
     go w n = trace ("executing: " <> show n) n * peek (n - 1) w
 
 
-
--- instance Semigroup Int where
---   (<>) = const
 
 -- λ> peek 2 factorialStreamW
 -- executing: 2

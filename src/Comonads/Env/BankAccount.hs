@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Comonads.Env.BankAccount where
 
 import Control.Comonad
@@ -8,6 +9,7 @@ import Control.Comonad.Env
 data Currency = Dollars | Euro | Pounds
   deriving (Show, Eq)
 
+-- Represent a bank account
 data Account a =
     Account { balance :: a
             , owner :: String
@@ -16,10 +18,12 @@ data Account a =
             , interestRate :: Double
             } deriving (Show, Eq, Functor)
 
+-- An Account is a comonad with a parameterizable balance
 instance Comonad Account where
   duplicate a = a $> a
   extract = balance
 
+-- We can access the account details
 instance ComonadEnv (Account ()) Account where
   ask account = account $> ()
 

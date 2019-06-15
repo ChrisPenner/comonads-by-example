@@ -6,8 +6,6 @@ module Comonads.Sheet where
 
 import Control.Comonad
 import Comonads.Store
-import Data.Stream.Infinite
-import Debug.Trace
 
 data CellRef
     = Price Int

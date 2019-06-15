@@ -1,9 +1,12 @@
-# comonads-by-example
+# Comonads By Example - Monadic Party 2019
 
-[![Hackage](https://img.shields.io/hackage/v/comonads-by-example.svg)](https://hackage.haskell.org/package/comonads-by-example)
-[![BSD3 license](https://img.shields.io/badge/license-BSD3-blue.svg)](LICENSE)
-[![Stackage Lts](http://stackage.org/package/comonads-by-example/badge/lts)](http://stackage.org/lts/package/comonads-by-example)
-[![Stackage Nightly](http://stackage.org/package/comonads-by-example/badge/nightly)](http://stackage.org/nightly/package/comonads-by-example)
-[![Build status](https://secure.travis-ci.org/ChrisPenner/comonads-by-example.svg)](https://travis-ci.org/ChrisPenner/comonads-by-example)
+Welcome! Here's where I'm keeping all my resources for the talk; inside [`src`](./src) you'll find a collection of
+(hopefully) interesting examples of many different types of Comonads; as well as from-scratch implementations of
+each of them.
 
-Comonads by example conference talk
+If you plan to attend the sessions you may find it helpful to clone this repository and `stack build` ahead of
+time.
+
+Also please come with some of your own questions! I'd love to make the session as interactive as possible
+
+I'll be posting full pdf versions of the slides here after the talks. Cheers 🍻 !

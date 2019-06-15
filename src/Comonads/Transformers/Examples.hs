@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Comonads.Transformers.Examples where
 
 import Control.Comonad

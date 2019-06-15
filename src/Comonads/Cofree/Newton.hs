@@ -10,8 +10,9 @@ f x = (x ^ (2 :: Integer)) - 612
 f' :: Double -> Double
 f' x = 2 * x
 
-steps :: Double -> Cofree Maybe Double
-steps delta = coiter coalg 10
+-- Build list of Newton's iterations until the difference between iterations is less than delta
+steps :: Double -> Double -> Cofree Maybe Double
+steps start delta = coiter coalg start
   where
     coalg :: Double -> Maybe Double
     coalg x = case x - (f x / f' x) of
@@ -19,8 +20,9 @@ steps delta = coiter coalg 10
             | abs (next - x) < delta -> Nothing
             | otherwise -> Just next
 
-steps' ::  Cofree Identity Double
-steps' = coiter coalg 10
+-- Calculate infinite newton's method iterations
+steps' ::  Double -> Cofree Identity Double
+steps' start = coiter coalg start
   where
     coalg :: Double -> Identity Double
     coalg x = pure $ x - (f x / f' x)
