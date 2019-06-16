@@ -56,21 +56,20 @@ buildReport = do
             compReport <- comparisonReport
             return $ header <> rpt <> "\n" <> compReport
 
-
-detailedReport' :: Int -> String
-detailedReport' month = reportConfig =>> buildReport & trace (Sum month)
-
-summaryReport :: Int -> String
-summaryReport month = reportConfig =>> buildReport . local (const Summary) & trace (Sum month)
-
 otherRegions :: (ComonadStore Region w) => w a -> [a]
 otherRegions = experiment (\r -> filter (/= r) allRegions)
 
 allRegions :: [Region]
 allRegions = [UK, America, Germany]
 
-comparisonReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w) => w Double -> String
-comparisonReport = do
-    otherReports <- detailedReport =>= otherRegions
-    return $ "Comparison Report\n" <> unlines otherReports
+comparisonReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w)
+                 => w Double -> String
+comparisonReport w =
+    let otherReports = w =>> detailedReport =>> otherRegions & extract
+     in "Comparison Report\n" <> unlines otherReports
 
+reportExample :: Int -> String
+reportExample month = reportConfig =>> buildReport & trace (Sum month)
+
+summaryReportExample :: Int -> String
+summaryReportExample month = reportConfig =>> buildReport . local (const Summary) & trace (Sum month)

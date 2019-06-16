@@ -27,14 +27,14 @@ startingGrid = store checkAlive (0, 0)
 -- * The cell has exactly 3 living neighbours
 -- OTHERWISE the cell is dead in the next iteration
 computeCellLiveness :: Grid -> Bool
-computeCellLiveness grid = undefined
+computeCellLiveness _grid = undefined
   where
-    currentCellAlive :: Bool
-    currentCellAlive = undefined
-    neighboursAlive :: _Neighbours Bool
-    neighboursAlive = undefined
-    numLivingNeighbours :: Int
-    numLivingNeighbours = undefined
+    _currentCellAlive :: Bool
+    _currentCellAlive = undefined
+    _neighboursAlive :: _Neighbours Bool
+    _neighboursAlive = undefined
+    _numLivingNeighbours :: Int
+    _numLivingNeighbours = undefined
 
 -- | Iterate the game of life by one step
 step :: Grid -> Grid

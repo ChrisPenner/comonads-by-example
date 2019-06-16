@@ -29,7 +29,7 @@ detailedReport = do
                      , "Next month's projections: " <> show next
                      ]
 
-buildHeader :: (ComonadEnv ReportStyle w) => w a-> String
+buildHeader :: (ComonadEnv ReportStyle w) => w a -> String
 buildHeader = do
     style <- ask
     return $ case style of
@@ -48,8 +48,8 @@ buildReport = do
             return $ header <> rpt
 
 
-detailedReport :: Int -> String
-detailedReport month = reportConfig =>> buildReport & trace (Sum month)
+reportExample :: Int -> String
+reportExample month = reportConfig =>> buildReport & trace (Sum month)
 
-summaryReport :: Int -> String
-summaryReport month = reportConfig =>> buildReport . local (const Summary) & trace (Sum month)
+summaryReportExample :: Int -> String
+summaryReportExample month = local (const Summary) reportConfig =>> buildReport =>> trace (Sum month) & extract

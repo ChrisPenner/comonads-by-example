@@ -278,4 +278,50 @@ monthlyReport = (EnvT Detailed (TracedT (store projections UK)))
 
 ---
 
+```haskell
+otherRegions :: (ComonadStore Region w) => w a -> [a]
+otherRegions = experiment (\r -> filter (/= r) allRegions)
 
+allRegions :: [Region]
+allRegions = [UK, America, Germany]
+```
+
+---
+
+```haskell
+λ> extract reportConfig
+100.0
+
+λ> otherRegions reportConfig
+[200.0,300.0]
+```
+
+---
+
+
+```haskell
+comparisonReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w) 
+                 => w Double -> String
+comparisonReport w =
+    let otherReports = w =>> detailedReport =>> otherRegions & extract
+     in "Comparison Report\n" <> unlines otherReports
+```
+
+---
+
+[.code-highlight: 1,2,11]
+[.code-highlight: all]
+```haskell
+buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w, ComonadStore Region w) 
+            => w Double -> String
+buildReport = do
+    header <- buildHeader
+    salesAmt <- extract
+    style <- ask
+    case style of
+        Summary -> return $ header <> "We achieved " <> show salesAmt <> " in sales!"
+        Detailed -> do
+            rpt <- detailedReport
+            compReport <- comparisonReport
+            return $ header <> rpt <> "\n" <> compReport
+```
