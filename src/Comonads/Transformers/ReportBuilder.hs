@@ -6,20 +6,19 @@ import Control.Comonad.Env
 import Control.Comonad.Traced
 import Data.Functor.Compose
 import Control.Arrow
-import Control.Applicative
+
+data ReportStyle = Detailed | Summary
 
 data Region = America | UK | Germany
     deriving (Show, Eq, Ord)
 
-data ReportStyle = Detailed | Summary
-
 projections :: Region -> Sum Int ->  Double
-projections UK (Sum month) = 1.2 ^ (max 0 month) * 100
+projections UK      (Sum month) = 1.2 ^ (max 0 month) * 100
 projections America (Sum month) = 1.3 ^ (max 0 month) * 200
 projections Germany (Sum month) = 1.5 ^ (max 0 month) * 300
 
-monthlyReport :: TracedT (Sum Int) (EnvT ReportStyle (Store Region)) Double
-monthlyReport = TracedT (EnvT Detailed (store projections UK))
+monthlyReport :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Double
+monthlyReport = (EnvT Detailed (TracedT (store projections UK)))
 
 reportPipeline :: (ComonadTraced (Sum Int) w, ComonadStore Region w, ComonadEnv ReportStyle w) => w Double -> String
 reportPipeline = buildReport =>= addHeader

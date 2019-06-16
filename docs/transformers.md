@@ -152,12 +152,12 @@ reportConfig = EnvT Summary _
 Setup
 
 ```haskell
-reportConfig :: EnvT ReportStyle (Traced (Sum Int)) a
-reportConfig = EnvT Summary (traced projections)
-
 -- Track sales projections over coming months
 projections :: Sum Int ->  Double
 projections (Sum month) = 1.2 ^ (max 0 month) * 100
+
+reportConfig :: EnvT ReportStyle (Traced (Sum Int)) a
+reportConfig = EnvT Detailed (traced projections)
 ```
 
 ---
@@ -176,26 +176,106 @@ nextMonth = trace (Sum 1)
 
 Make a simple report
 
+[.code-highlight: 1]
+[.code-highlight: 3]
+[.code-highlight: 4-5]
+[.code-highlight: 6-9]
+[.code-highlight: all]
 ```haskell
-simpleReport :: (ComonadTraced (Sum Int) w) => w Double -> String
-simpleReport = do
+detailedReport :: (ComonadTraced (Sum Int) w) => w Double -> String
+detailedReport = do
     salesAmt <- extract
     prev <- previousMonth
     next <- nextMonth
-    return $ "This months sales in totality are: "
-            <> show salesAmt
-            <> "\nPrevious month's sales: " <> show prev
-            <> "\nNext month's projections: " <> show next
+    return $ unlines [ "This months sales in totality are: " <> show salesAmt
+                     , "Previous month's sales: " <> show prev
+                     , "Next month's projections: " <> show next
+                     ]
 ```
 
 ---
 
+[.code-highlight: 1]
+[.code-highlight: 3]
+[.code-highlight: all]
 ```haskell
 buildHeader :: (ComonadEnv ReportStyle w) => w a-> String
 buildHeader = do
     style <- ask
-    pure $ case style of
+    return $ case style of
             Detailed -> "Please find enclosed your DETAILED report: \n"
             Summary -> "Please find enclosed your SUMMARY report: \n"
 ```
+
+---
+
+
+[.code-highlight: 1-2]
+[.code-highlight: 4]
+[.code-highlight: 5]
+[.code-highlight: 6]
+[.code-highlight: 7-12]
+[.code-highlight: all]
+```haskell
+buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w) 
+            => w Double -> String
+buildReport = do
+    header <- buildHeader
+    salesAmt <- extract
+    style <- ask
+    case style of
+        Summary -> 
+          return $ header <> "We achieved " <> show salesAmt <> " in sales!"
+        Detailed -> do
+            rpt <- detailedReport
+            return $ header <> rpt
+```
+
+---
+
+#[fit] **Questions**?
+#[fit] Want to try anything?
+
+---
+
+#[fit] Let's add 
+#[fit] **one more layer**
+
+---
+
+#[fit] what if we want
+#[fit] a report for
+#[fit]  **each region**
+
+---
+
+[.code-highlight: 1-2]
+[.code-highlight: all]
+```haskell
+data Region = America | UK | Germany
+    deriving (Show, Eq, Ord)
+
+projections :: Region -> Sum Int ->  Double
+projections UK      (Sum month) = 1.2 ^ (max 0 month) * 100
+projections America (Sum month) = 1.3 ^ (max 0 month) * 200
+projections Germany (Sum month) = 1.5 ^ (max 0 month) * 300
+```
+
+---
+
+Just play type tetris for this stuff...
+
+```haskell
+data    EnvT    e w a = EnvT e (w a)
+newtype TracedT m w a = TracedT (w (m -> a))
+data    StoreT  s w a = StoreT (w (s -> a)) s	
+
+monthlyReport 
+  :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Double
+monthlyReport = (EnvT Detailed (TracedT (store projections UK)))
+
+```
+
+---
+
 
