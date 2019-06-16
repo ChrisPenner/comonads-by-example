@@ -365,7 +365,7 @@ pad'' = do
 
 ---
 
-# Just for fun
+# ⛳️ Code Golf 🏌️‍♂️
 
 ```haskell
 pad''' :: Env Settings String -> String
