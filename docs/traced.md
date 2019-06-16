@@ -270,6 +270,14 @@ estimateDerivative w =
 
 ---
 
+#[fit] **Reader** Actions
+#[fit] are **queries**
+#[fit] over **Env**
+
+---
+
+Do-notation
+
 ```haskell
 estimateDerivativeReader :: Traced (Sum Double) Double
                          -> Double

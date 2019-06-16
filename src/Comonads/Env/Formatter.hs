@@ -25,7 +25,9 @@ pad :: Env Settings String -> String
 pad w =
     let padAmt = asks padAmount w
         c = asks padChar w
-     in replicate padAmt c <> extract w <> replicate padAmt c
+        txt = extract w
+        padding = replicate padAmt c
+     in padding <> txt <> padding
 
 -- Showing some other notations
 pad2 :: Env Settings String -> String

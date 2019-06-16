@@ -321,22 +321,29 @@ pipeline3 = trunc =>= pad . local (setPadChar '_') =>= pad
 
 Bonus
 
+#[fit] Abusing 
 #[fit] **Do-Notation**
 
 ---
 
-#[fit] All our queries happen on the same 
-#[fit] **Object**
+do-notation provides the context on every line
 
----
-
-# Abusing the Reader Monad
-
----
-
+[.code-highlight: 2-4,9-12]
+[.code-highlight: 5,13]
+[.code-highlight: 6,14]
+[.code-highlight: 7,15]
+[.code-highlight: all]
 ```haskell
-pad2 :: Env Settings String -> String
-pad2 = do
+pad :: Env Settings String -> String
+pad w =
+    let padAmt = asks padAmount w
+        c      = asks padChar w
+        txt    = extract w
+        padding = replicate padAmt c
+     in padding <> txt <> padding
+
+pad' :: Env Settings String -> String
+pad' = do
   padAmt <- asks padAmount
   c      <- asks padChar
   txt    <- extract
@@ -346,17 +353,11 @@ pad2 = do
 
 ---
 
-#[fit] **Reader** Actions
-#[fit] are **queries**
-#[fit] over **Env**
-
----
-
 # Abusing even further
 
 ```haskell
-pad2 :: Env Settings String -> String
-pad2 = do
+pad'' :: Env Settings String -> String
+pad'' = do
   padding <- replicate <$> asks padAmount <*> asks padChar
   txt     <- extract
   return $ padding <> txt <> padding
@@ -367,8 +368,8 @@ pad2 = do
 # Just for fun
 
 ```haskell
-pad3 :: Env Settings String -> String
-pad3 = do
+pad''' :: Env Settings String -> String
+pad''' = do
   let padding = replicate <$> asks padAmount <*> asks padChar
   padding <> extract <> padding
 ```
