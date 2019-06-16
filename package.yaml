@@ -9,6 +9,9 @@ copyright: 2019 Chris Penner
 license: BSD3
 github: ChrisPenner/comonads-by-example.git
 tested-with: GHC==8.4.4
+default-extensions:
+- FlexibleContexts
+- FlexibleInstances
 ghc-options:
 - -Wall
 - -Wincomplete-uni-patterns
