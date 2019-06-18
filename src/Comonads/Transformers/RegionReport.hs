@@ -11,12 +11,12 @@ data ReportStyle = Detailed | Summary
 data Region = America | UK | Germany
     deriving (Show, Eq, Ord)
 
-projections :: Region -> Sum Int ->  Double
+projections :: Region -> Sum Int ->  Float
 projections UK      (Sum month) = 1.2 ^ (max 0 month) * 100
 projections America (Sum month) = 1.3 ^ (max 0 month) * 200
 projections Germany (Sum month) = 1.5 ^ (max 0 month) * 300
 
-reportConfig  :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Double
+reportConfig  :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Float
 reportConfig  = (EnvT Detailed (TracedT (store projections UK)))
 
 previousMonth :: ComonadTraced (Sum Int) w => w a -> a
@@ -25,7 +25,7 @@ previousMonth = trace (Sum (-1))
 nextMonth :: ComonadTraced (Sum Int) w => w a -> a
 nextMonth = trace (Sum 1)
 
-detailedReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w) => w Double -> String
+detailedReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w) => w Float -> String
 detailedReport = do
     salesAmt <- extract
     prev <- previousMonth
@@ -44,7 +44,7 @@ buildHeader = do
             Detailed -> "Please find enclosed your DETAILED report\n"
             Summary -> "Please find enclosed your SUMMARY report\n"
 
-buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w, ComonadStore Region w) => w Double -> String
+buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w, ComonadStore Region w) => w Float -> String
 buildReport = do
     header <- buildHeader
     salesAmt <- extract
@@ -57,13 +57,15 @@ buildReport = do
             return $ header <> rpt <> "\n" <> compReport
 
 otherRegions :: (ComonadStore Region w) => w a -> [a]
-otherRegions = experiment (\r -> filter (/= r) allRegions)
+otherRegions w = experiment others w
+  where
+    others currentRegion = filter (/= currentRegion) allRegions
 
 allRegions :: [Region]
 allRegions = [UK, America, Germany]
 
 comparisonReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w)
-                 => w Double -> String
+                 => w Float -> String
 comparisonReport w =
     let otherReports = w =>> detailedReport =>> otherRegions & extract
      in "Comparison Report\n" <> unlines otherReports

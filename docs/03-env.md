@@ -315,8 +315,6 @@ pipeline3 = trunc =>= pad . local (setPadChar '_') =>= pad
 
 #[fit] Questions?
 
-#[fit] Or want to **try** something?
-
 ---
 
 Bonus
@@ -373,3 +371,10 @@ pad''' = do
   let padding = replicate <$> asks padAmount <*> asks padChar
   padding <> extract <> padding
 ```
+
+---
+
+##[fit] `chrispenner.ca`
+##[fit] `github.com/ChrisPenner`
+##[fit] `🐦 @ChrisLPenner`
+

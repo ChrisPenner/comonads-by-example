@@ -16,14 +16,6 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
-![inline](./images/wire.png)
-
-`Hiring haskell devs/devops`
-
-`wire.com/jobs`
-
----
-
 #[fit] Comonad Transformers
 #[fit] **Stack**
 ### Just like monad transformers
@@ -153,7 +145,7 @@ Setup
 
 ```haskell
 -- Track sales projections over coming months
-projections :: Sum Int ->  Double
+projections :: Sum Int ->  Float
 projections (Sum month) = 1.2 ^ (max 0 month) * 100
 
 reportConfig :: EnvT ReportStyle (Traced (Sum Int)) a
@@ -174,6 +166,25 @@ nextMonth = trace (Sum 1)
 
 ---
 
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
+```haskell
+previousMonth = trace (Sum (-1))
+nextMonth = trace (Sum 1)
+
+λ> reportConfig & extract
+100.0
+
+λ> reportConfig =>> nextMonth  & extract
+120.00001
+
+λ> reportConfig =>> nextMonth =>> nextMonth =>> previousMonth & extract
+120.00001
+```
+
+---
+
 Make a simple report
 
 [.code-highlight: 1]
@@ -182,7 +193,7 @@ Make a simple report
 [.code-highlight: 6-9]
 [.code-highlight: all]
 ```haskell
-detailedReport :: (ComonadTraced (Sum Int) w) => w Double -> String
+detailedReport :: (ComonadTraced (Sum Int) w) => w Float -> String
 detailedReport = do
     salesAmt <- extract
     prev <- previousMonth
@@ -209,6 +220,13 @@ buildHeader = do
 
 ---
 
+```haskell
+λ> buildHeader reportConfig 
+"Please find enclosed your DETAILED report\n"
+```
+
+---
+
 
 [.code-highlight: 1-2]
 [.code-highlight: 4]
@@ -218,7 +236,7 @@ buildHeader = do
 [.code-highlight: all]
 ```haskell
 buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w) 
-            => w Double -> String
+            => w Float -> String
 buildReport = do
     header <- buildHeader
     salesAmt <- extract
@@ -233,8 +251,31 @@ buildReport = do
 
 ---
 
+[.code-highlight: 1-6]
+[.code-highlight: 7-12]
+[.code-highlight: 13-18]
+[.code-highlight: all]
+```haskell
+λ> putStrLn $ buildReport reportConfig
+Please find enclosed your DETAILED report:
+This months sales in totality are: 100.0
+Previous month's sales: 100.0
+Next month's projections: 120.0
+
+λ> putStrLn $ reportConfig =>> nextMonth =>> buildReport & extract
+Please find enclosed your DETAILED report:
+This months sales in totality are: 120.0
+Previous month's sales: 100.0
+Next month's projections: 144.0
+
+λ> putStrLn $ reportConfig =>> nextMonth =>> buildReport . local (const Summary) & extract
+Please find enclosed your SUMMARY report:
+We achieved 120.0 in sales!
+```
+
+---
+
 #[fit] **Questions**?
-#[fit] Want to try anything?
 
 ---
 
@@ -255,7 +296,7 @@ buildReport = do
 data Region = America | UK | Germany
     deriving (Show, Eq, Ord)
 
-projections :: Region -> Sum Int ->  Double
+projections :: Region -> Sum Int ->  Float
 projections UK      (Sum month) = 1.2 ^ (max 0 month) * 100
 projections America (Sum month) = 1.3 ^ (max 0 month) * 200
 projections Germany (Sum month) = 1.5 ^ (max 0 month) * 300
@@ -270,17 +311,24 @@ data    EnvT    e w a = EnvT e (w a)
 newtype TracedT m w a = TracedT (w (m -> a))
 data    StoreT  s w a = StoreT (w (s -> a)) s	
 
-monthlyReport 
-  :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Double
-monthlyReport = (EnvT Detailed (TracedT (store projections UK)))
+reportConfig 
+  :: EnvT  ReportStyle (TracedT (Sum Int) (Store Region)) Float
+reportConfig = (EnvT Detailed (TracedT (store projections UK)))
 
 ```
 
 ---
 
+#[fit]Now that we have a **store**
+#[fit]We can **experiment** in other regions
+
+---
+
 ```haskell
 otherRegions :: (ComonadStore Region w) => w a -> [a]
-otherRegions = experiment (\r -> filter (/= r) allRegions)
+otherRegions w = experiment others w
+  where
+    others currentRegion = filter (/= currentRegion) allRegions
 
 allRegions :: [Region]
 allRegions = [UK, America, Germany]
@@ -289,19 +337,62 @@ allRegions = [UK, America, Germany]
 ---
 
 ```haskell
+projections UK      (Sum month) = 1.2 ^ (max 0 month) * 100
+projections America (Sum month) = 1.3 ^ (max 0 month) * 200
+projections Germany (Sum month) = 1.5 ^ (max 0 month) * 300
+
 λ> extract reportConfig
 100.0
 
+-- others UK == [America, Germany]
 λ> otherRegions reportConfig
 [200.0,300.0]
 ```
 
 ---
 
+#[fit] Using both **Store**
+#[fit] and **Traced**
+### We can build regional reports for other months!
+
+---
+
+[.code-highlight: 1-2]
+[.code-highlight: 1-5]
+[.code-highlight: 1-8]
+[.code-highlight: all]
+```haskell
+λ> reportConfig & otherRegions
+[200.0,300.0]
+
+λ> reportConfig  =>> otherRegions =>> trace 3 & extract
+[439.39996,1012.5]
+
+λ> reportConfig  =>> trace 3 =>> otherRegions & extract
+[439.39996,1012.5]
+
+λ> reportConfig  =>> trace 1 =>> otherRegions =>> trace 2 & extract
+[439.39996,1012.5]
+```
+
+---
+
+#[fit] **Extending** **Trace**
+#[fit] **Shifts** us to different **views**
+
+---
+
+#[fit] Every **view** is kept up to date
+#[fit] **lazily**
+
+
+---
 
 ```haskell
+-- otherRegions :: (ComonadStore Region w) => w a -> [a]
+
 comparisonReport :: (ComonadTraced (Sum Int) w, ComonadStore Region w) 
-                 => w Double -> String
+                 => w Float -> String
 comparisonReport w =
     let otherReports = w =>> detailedReport =>> otherRegions & extract
      in "Comparison Report\n" <> unlines otherReports
@@ -309,11 +400,28 @@ comparisonReport w =
 
 ---
 
+```haskell
+λ> putStrLn $ comparisonReport reportConfig
+Comparison Report
+America:
+This months sales in totality are: 200.0
+Previous month's sales: 200.0
+Next month's projections: 260.0
+
+Germany:
+This months sales in totality are: 300.0
+Previous month's sales: 300.0
+Next month's projections: 450.0
+```
+
+
+---
+
 [.code-highlight: 1,2,11]
 [.code-highlight: all]
 ```haskell
 buildReport :: (ComonadTraced (Sum Int) w, ComonadEnv ReportStyle w, ComonadStore Region w) 
-            => w Double -> String
+            => w Float -> String
 buildReport = do
     header <- buildHeader
     salesAmt <- extract
@@ -325,3 +433,95 @@ buildReport = do
             compReport <- comparisonReport
             return $ header <> rpt <> "\n" <> compReport
 ```
+
+---
+
+```haskell
+λ> putStrLn $ buildReport reportConfig
+Please find enclosed your DETAILED report
+UK:
+This months sales in totality are: 100.0
+Previous month's sales: 100.0
+Next month's projections: 120.00001
+
+Comparison Report
+America:
+This months sales in totality are: 200.0
+Previous month's sales: 200.0
+Next month's projections: 260.0
+
+Germany:
+This months sales in totality are: 300.0
+Previous month's sales: 300.0
+Next month's projections: 450.0
+```
+
+---
+
+```haskell
+λ> putStrLn $ reportConfig =>> trace 3 =>> buildReport & extract
+Please find enclosed your DETAILED report
+UK:
+This months sales in totality are: 172.80002
+Previous month's sales: 144.0
+Next month's projections: 207.36
+
+Comparison Report
+America:
+This months sales in totality are: 439.39996
+Previous month's sales: 337.99997
+Next month's projections: 571.21985
+
+Germany:
+This months sales in totality are: 1012.5
+Previous month's sales: 675.0
+Next month's projections: 1518.75
+```
+
+---
+
+```haskell
+λ> let monthlyReports = reportConfig =>> buildReport
+λ> putStrLn $ peek Germany monthlyReports
+Please find enclosed your DETAILED report
+Germany:
+This months sales in totality are: 300.0
+Previous month's sales: 300.0
+Next month's projections: 450.0
+
+Comparison Report
+UK:
+This months sales in totality are: 100.0
+Previous month's sales: 100.0
+Next month's projections: 120.00001
+
+America:
+This months sales in totality are: 200.0
+Previous month's sales: 200.0
+Next month's projections: 260.0
+```
+
+---
+
+[.code-highlight: 1]
+[.code-highlight: 3]
+[.code-highlight: 5]
+[.code-highlight: 7]
+[.code-highlight: all]
+
+```haskell
+λ> let monthlyReports = reportConfig =>> buildReport
+
+λ> let germanyReport = peek Germany monthlyReports
+
+λ> let germanyMarchReport = monthlyReports =>> peek Germany =>> trace 3 & extract
+
+λ> let allFebruaryReports = monthlyReports =>> trace 2 =>> experiment (const allRegions)
+```
+
+---
+
+##[fit] `chrispenner.ca`
+##[fit] `github.com/ChrisPenner`
+##[fit] `🐦 @ChrisLPenner`
+

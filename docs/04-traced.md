@@ -41,11 +41,11 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
-#[fit]`??? :: Map String Int -> Int`
+#[fit]`maxWordCount :: Map String Int -> Int`
 
 ---
 
-#[fit]`??? :: Set a - > Int`
+#[fit]`weightOf :: Set Item - > Int`
 
 
 ---
@@ -54,6 +54,12 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 #[fit] is like **store**
 ### but all **positions**
 #[fit] are **Relative**
+
+---
+
+#[fit] **I.e.**
+#[fit] We don't have access to the 
+#[fit] current **position**
 
 ---
 
@@ -82,7 +88,7 @@ sum :: [Int] -> Int
 λ> let adder = traced sum
 adder :: Traced [Int] Int
 
-λ> extract adder -- a.k.. sum []
+λ> extract adder -- a.k.a. sum []
 0
 ```
 
@@ -125,6 +131,29 @@ adder' :: Traced [Int] Int
 λ> trace [10] adder' -- a.k.a. sum ([10] <> [1,2,3])
 16
 ```
+
+---
+
+#[fit] Extending 
+#[fit] creates a **NEW** Traced function
+#[fit] With arguments **inside**
+
+
+---
+
+```haskell
+  duplicate :: Traced m a -> Traced m (Traced m a)
+  duplicate (Traced f) =
+      Traced $ \m -> Traced (f . mappend m)
+```
+
+Even if we **apply** the inner function
+It remembers its **argument**.
+
+---
+
+#[fit] Each time we **extend trace**
+#[fit] We **prepend** to the argument
 
 ---
 
@@ -270,17 +299,24 @@ estimateDerivative w =
 
 ---
 
-#[fit] **Reader** Actions
-#[fit] are **queries**
-#[fit] over **Env**
+#[fit] More do-notation
+#[fit] **abuse**
 
 ---
 
 Do-notation
 
+[.code-highlight: 1,7]
+[.code-highlight: 2-3,8-9]
+[.code-highlight: 4,10]
+[.code-highlight: all]
 ```haskell
-estimateDerivativeReader :: Traced (Sum Double) Double
-                         -> Double
+estimateDerivative w =
+    let leftY = trace (Sum (-1)) w
+        rightY = trace (Sum 1) w
+     in (rightY - leftY) / 2
+
+estimateDerivativeReader :: Traced (Sum Double) Double -> Double
 estimateDerivativeReader = do
     leftY <- trace (Sum (-1))
     rightY <- trace (Sum 1)
@@ -307,6 +343,9 @@ derive = extend estimateDerivative
 #[fit] like `liftA2`
 #[fit] But always **zippy**
 
+---
+
+#[fit] `liftW2 :: (a -> b -> c) -> w a -> w b -> w c`
 
 ---
 
@@ -438,3 +477,10 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 --- 
 
 # [fit] Questions**?**
+
+---
+
+##[fit] `chrispenner.ca`
+##[fit] `github.com/ChrisPenner`
+##[fit] `🐦 @ChrisLPenner`
+
