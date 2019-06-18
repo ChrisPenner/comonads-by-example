@@ -946,71 +946,14 @@ instance Comonad (Store s) where
 
 ---
 
-
 ##[fit] `chrispenner.ca`
 ##[fit] `github.com/ChrisPenner`
 ##[fit] `🐦 @ChrisLPenner`
 
 ---
 
-Bonus
 
 ---
-
-#[fit] extending
-### a
-## **selection query**
-#[fit] _s h i f t s_
-### slots
-
----
-
-```haskell
-λ> pos squared
-10
-λ> extract squared
-100
-λ> peeks (+1) squared
-121
-```
-
----
-
-```haskell
-shifted :: Store Int Int
-shifted = squared =>> peeks (+1)
-
-λ> peek 2 shifted
-9
-
-λ> peek 10 shifted
-121
-```
-
----
-
-Note the difference:
-
-```haskell
-λ> pos shifted 
-10
-λ> extract shifted
-121
-VS.
-λ> pos $ seeks (+1) squared 
-11
-λ> extract $ seeks (+1) squared
-121
-```
-
----
-
-# Duplicate!
-
----
-
-![fit left](./images/store/diagrams/warehouse.png)
-![fit right](./images/store/diagrams/warehouse-duplicate.png)
 
 ---
 

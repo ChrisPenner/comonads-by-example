@@ -19,8 +19,9 @@ collapseSlashes = T.replace "//" "/" . extract
 showTransformation :: Store T.Text T.Text -> T.Text
 showTransformation w = pos w <> ": " <> extract w
 
+urlTransformer :: Store T.Text T.Text
+urlTransformer = store id "" =>> collapseSlashes =>> normalizePath =>> showTransformation
+
 badUrl :: T.Text
 badUrl = " gOOgLe.com//a/B//c  "
 
-urlTransformer :: Store T.Text T.Text
-urlTransformer = store id "" =>> collapseSlashes =>> normalizePath =>> showTransformation

@@ -33,9 +33,9 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
     2. Store Comonad
 
 * Session 3 & 4
-    1. Env Comonad & Comonad Transformers
+    1. Env Comonad
     2. Traced Comonad
-    3. Comonad Fix (Bonus)
+    3. Transformers/Comonad Fix (Bonus)
 ```
 
 
@@ -49,6 +49,15 @@ git clone git@github.com:ChrisPenner/comonads-by-example
 cd comonads-by-example
 stack build
 ```
+
+---
+
+#[fit] Talk format
+
+---
+
+#[fit] Meet your 
+#[fit] neighbour
 
 ---
 
