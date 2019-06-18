@@ -17,30 +17,6 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 
 ---
 
-![inline](./images/wire.png)
-
-`Hiring haskell devs/devops`
-
-`wire.com/jobs`
-
----
-
-# Outline
-
-```
-* Session 1 & 2
-    1. Comonads using streams and queries
-    2. Store Comonad
-
-* Session 3 & 4
-    1. Env Comonad
-    2. Traced Comonad
-    3. Transformers/Comonad Fix (Bonus)
-```
-
-
----
-
 # Get the SRC
 ### github.com/ChrisPenner/comonads-by-example
 
@@ -49,15 +25,6 @@ git clone git@github.com:ChrisPenner/comonads-by-example
 cd comonads-by-example
 stack build
 ```
-
----
-
-#[fit] Talk format
-
----
-
-#[fit] Meet your 
-#[fit] neighbour
 
 ---
 

@@ -955,6 +955,8 @@ instance Comonad (Store s) where
 
 ---
 
+Bonus
+
 ---
 
 # Extend
