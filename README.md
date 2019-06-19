@@ -13,4 +13,8 @@ If you plan to attend the sessions you may find it helpful to do the following a
 
 Also please come with some of your own questions! I'd love to make the session as interactive as possible
 
-I'll be posting full pdf versions of the slides here after the talks. Cheers 🍻 !
+# Slides
+
+* [First session](./docs/rendered)
+
+* Second session (coming soon)
