@@ -68,7 +68,7 @@ dataDef2 ('D',  row) w | row < 6 =
 -- Tax
 dataDef2 ('D', 6) _ = 0.15
 -- Total
-dataDef2 ('D', 7) w = sum . getCells (('D',) <$> [1..5]) $ w
+dataDef2 ('D', 7) w = sum . getCells (('D',) <$> [1..5] :: [(Char, Int)]) $ w
 -- Total With Tax
 dataDef2 ('D', 8) w =
     let tax = peek ('D', 6) w

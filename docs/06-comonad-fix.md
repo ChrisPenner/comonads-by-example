@@ -12,7 +12,7 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 ^ code: auto(25)
 
 #[fit] Comonad **Fix**!
-### _The truth was inside you all along_
+### _for when your comonads are broken_
 
 ---
 
@@ -20,6 +20,11 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 #[fit]compute the **answer**
 
 ####seriously Haskell WTF?
+
+---
+
+#[fit] Like 
+#[fit] **Spreadsheets**
 
 ---
 
@@ -59,7 +64,7 @@ footer: `💻 github.com/ChrisPenner/comonads-by-example | 🐦 @ChrisLPenner | 
 -- which we can use in the computation
 let fact 0 = 1
     fact n = n * fact (n -1)
-
+                 ^^^^
 > fact 3
 6
 ```
@@ -72,8 +77,15 @@ let fact 0 = 1
 
 ---
 
+#[fit] Each layer needs access
+#[fit] To a **nearby** answer
+
+---
+
 # Factorial
 
+[.code-highlight: 4]
+[.code-highlight: all]
 ```haskell
 factorialTraced :: Traced (Sum Int) Int
 factorialTraced = extend wfix (traced go)
@@ -90,16 +102,16 @@ factorialTraced = extend wfix (traced go)
 
 ```haskell
 ingredientsOf :: String -> S.Set String
-ingredientsOf "string"  = S.fromList ["wool"]
+ingredientsOf "string" = S.fromList ["wool"]
 ingredientsOf "sticks"  = S.fromList ["wood"]
-ingredientsOf "bow"     = S.fromList ["sticks", "string"]
-ingredientsOf "arrow"   = S.fromList ["sticks", "feather", "stone"]
-ingredientsOf "quiver"  = S.fromList ["arrow", "bow"]
-ingredientsOf "torches" = S.fromList ["coal", "sticks"]
-ingredientsOf _         = mempty
+ingredientsOf "bow"    = S.fromList ["sticks", "string"]
+ingredientsOf "arrows"  = S.fromList ["sticks", "feathers", "stone"]
+ingredientsOf "quiver" = S.fromList ["arrows", "bow"]
+ingredientsOf "torches"  = S.fromList ["coal", "sticks"]
+ingredientsOf _        = mempty
 
-recipes :: Traced (S.Set String) (S.Set String)
-recipes = traced (foldMap ingredientsOf)
+recipes :: Store (S.Set String) (S.Set String)
+recipes = store (foldMap ingredientsOf) mempty
 ```
 
 ---
@@ -114,11 +126,11 @@ torches -> coal, sticks
 ```
 
 ```haskell
-λ> trace ["string"] recipes
+λ> peek ["string"] recipes
 fromList ["wool"]
-λ> trace ["string", "torches"] recipes
+λ> peek ["string", "torches"] recipes
 fromList ["coal","sticks","wool"]
-λ> extract $ recipes =>> trace ["torches"]
+λ> extract $ recipes =>> peek ["torches"]
 fromList ["coal","sticks"]
 ```
 
@@ -133,17 +145,6 @@ quiver  -> arrow, bow
 torches -> coal, sticks
 ```
 
-```haskell
-λ> extract $ recipes =>> traces id
-fromList []
-λ> trace ["quiver"] $ recipes
-fromList ["arrows","bow"]
-λ> trace ["quiver"] $ recipes =>> traces id
-fromList ["arrows","bow","feathers","sticks","stone","string"]
-λ> trace ["quiver"] $ recipes =>> traces id =>> traces id
-fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
-```
-
 ---
 
 ![inline](./images/dep-analysis/quiver.png)
@@ -154,24 +155,47 @@ fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 
 ---
 
-![inline](./images/dep-analysis/traces-quiver.png)
+[.code-highlight: 1-2]
+[.code-highlight: 4]
+[.code-highlight: 7-9]
+[.code-highlight: 5]
+[.code-highlight: all]
+```haskell
+recipes :: Store (S.Set String) (S.Set String)
+recipes = store (foldMap ingredientsOf) mempty
+
+allDeps :: Store (S.Set String) (S.Set String)
+allDeps = extend wfix (go <$> recipes)
+  where
+    go :: S.Set String -> Store (S.Set String) (S.Set String) -> (S.Set String)
+    go deps _    | S.null deps = mempty
+    go deps result             = deps <> peek deps rec
+```
 
 ---
 
+[.code-highlight: 1-6]
+[.code-highlight: 1-9]
+[.code-highlight: 1-12]
+[.code-highlight: all]
 ```haskell
-recipes :: Traced (S.Set String) (S.Set String)
-recipes = traced (foldMap ingredientsOf)
+string  -> wool
+sticks  -> wood
+bow     -> sticks, string
+arrow   -> sticks, feather, stone
+quiver  -> arrow, bow
+torches -> coal, sticks
 
-allIngredientsFor :: Traced (S.Set String) (S.Set String)
-allIngredientsFor = extend wfix (selectNext <$> listen recipes)
-  where
-    selectNext :: (S.Set String, S.Set String)
-               -> Traced (S.Set String) (S.Set String)
-               -> S.Set String
-    selectNext (requirements, input) t
-        | S.null (S.difference requirements input) = input
-        | otherwise = trace (S.difference requirements input) t
+λ> peek ["arrows"]  allDeps
+fromList ["feathers","sticks","stone","wood"]
+
+λ> peek ["arrows", "torches"]  allDeps
+fromList ["coal","feathers","sticks","stone","wood"]
+
+λ> peek ["quiver"]  allDeps
+fromList ["arrows","bow","feathers","sticks","stone","string","wood","wool"]
 ```
+
 
 ---
 
@@ -224,7 +248,32 @@ dataDef _ = 0
 
 ---
 
+
 ```haskell
+sheet :: Store (Char, Int) Double
+sheet = (store (dataDef . first toUpper ) ('A', 1))
+
+λ> peek ('B', 2) sheet
+1.0
+
+λ> peek ('B', 4) sheet
+2.0
+
+λ> peek ('C', 4) sheet
+9.0
+```
+
+![fit right](./images/spreadsheets/item-cost.png)
+
+---
+
+```haskell
+dataDef2 :: (Char, Int) 
+         -> Store (Char, Int) Double 
+         ->  Double
+
+-- B and C are the same; we ignore the new input...
+
 dataDef2 ('D',  row) w | row < 6 =
   let price = peek ('B', row) w
       quant = peek ('C', row) w
@@ -234,6 +283,12 @@ dataDef2 ('D',  row) w | row < 6 =
 ![fit right](./images/spreadsheets/item-cost.png)
 
 ---
+
+[.code-highlight: 1-2]
+[.code-highlight: 4-5]
+[.code-highlight: 6-7]
+[.code-highlight: 8-12]
+[.code-highlight: all]
 
 ```haskell
 getCells :: Functor f => f s -> Store s a -> f a
@@ -249,4 +304,3 @@ dataDef2 ('D', 8) w =
         total = peek ('D', 7) w
      in (tax * total) + total
 ```
-
