@@ -1,20 +1,10 @@
 # Comonads By Example - Monadic Party 2019
 
-Welcome! Here's where I'm keeping all my resources for the talk; inside [`src`](./src) you'll find a collection of
-(hopefully) interesting examples of many different types of Comonads; as well as from-scratch implementations of
-each of them.
+Hey folks; here's the repo for a talk I gave about comonads at Monadic Party 2019!
 
-# Workshop Attendees:
+You can find the [Slides Here](./docs/rendered); and all the code used in examples (of varying quality and completeness) [here](./src)
 
-If you plan to attend the sessions you may find it helpful to do the following ahead of time:
+You can set it up to run the examples like so:
 
 1. `git clone git@github.com:ChrisPenner/comonads-by-example.git`
 2. `cd comonads-by-example && stack build`
-
-Also please come with some of your own questions! I'd love to make the session as interactive as possible
-
-# Slides
-
-* [First session](./docs/rendered)
-
-* Second session (coming soon)
