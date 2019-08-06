@@ -4,7 +4,7 @@ Hey folks; here's the repo for a talk I gave about comonads at Monadic Party 201
 
 You can find the [Slides Here](./docs/rendered); and all the code used in examples (of varying quality and completeness) [here](./src)
 
-A videa recording will hopefully be uploaded soon :)
+[Complete Video Recordings](https://www.youtube.com/watch?v=HOmOQnQGtPU&list=PLvjuoT_jwuWapjyNABM6jueqIumFLFxXQ)
 
 You can set it up to run the examples like so:
 
